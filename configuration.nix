@@ -22,6 +22,12 @@
     }
   ];
 
+  # Filesystems
+  fileSystems."/home/jasonmj/org" = {
+    device = "https://dav.box.com/dav";
+    fsType = "davfs";
+  };
+
   # Fonts
   fonts = {
     fonts = with pkgs; [
@@ -97,7 +103,10 @@
   };
 
   # Allow Editing Keyboard Backlight without Password
-  security.sudo.extraConfig = "jasonmj nixos = (root) NOPASSWD: /sys/class/leds/smc";
+  security.sudo.extraConfig = ''
+    jasonmj nixos = (root) NOPASSWD: /run/current-system/sw/bin/mount
+    jasonmj nixos = (root) NOPASSWD: /sys/class/leds/
+  '';
 
   # Locate Config
   services.locate.prunePaths = ["/boot" "/etc" "/home/jasonmj/.config" "/home/jasonmj/.cache" "/home/jasonmj/Maildir" "/nix/store" "/tmp" "/var/cache" "/var/lock" "/var/run" "/var/spool" "/var/tmp"];
