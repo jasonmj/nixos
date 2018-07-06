@@ -31,6 +31,10 @@
   hardware.pulseaudio = {
     enable = true;
     package = pkgs.pulseaudioFull;
+    tcp = {
+      enable = true;
+      anonymousClients.allowedIpRanges = ["127.0.0.1"];
+    };
   };
   hardware.bluetooth.enable = true;
 }

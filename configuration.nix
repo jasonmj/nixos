@@ -26,6 +26,12 @@
   fileSystems."/home/jasonmj/org" = {
     device = "https://dav.box.com/dav";
     fsType = "davfs";
+    options = [
+      "noauto"
+      "uid=1000"
+      "gid=100"
+      "x-systemd.automount"
+    ];
   };
 
   # Fonts
@@ -33,9 +39,16 @@
     fonts = with pkgs; [
       fira
       fira-code
+      hack-font
       inconsolata
+      source-code-pro
     ];
   };
+
+  # automatic gc
+  nix.gc.automatic = true;
+  nix.gc.dates = "weekly";
+  nix.gc.options = "--delete-older-than 30d";
 
   networking.hostName = "nixos";
   networking.enableB43Firmware = true;
@@ -48,15 +61,21 @@
       "diamondrubber.test"
       "fsl-backend.test"
       "fullsteamlabs.test"
+      "johnsonhilliard.test"
       "riverartsdistrict.test"
     ];
   };
+  networking.enableIPv6 = false;
 
   nixpkgs.config.allowUnfree = true;
 
   # Set your time zone.
   time.timeZone = "America/New_York";
 
+  # Keyboard Backlight
+  programs.kbdlight.enable = true;
+
+  # Installed Packages
   environment.systemPackages = with pkgs; [
     ag
     bind
@@ -66,9 +85,9 @@
     elixir
     emacs
     erlang
-    evince
     filezilla
     firefox
+    fzf
     gimp
     git
     gnumeric
@@ -76,16 +95,19 @@
     hfsprogs
     insomnia
     insync
-    kbdlight
+    ispell
+    isync
     keychain
     libreoffice
+    mlocate
     mopidy mopidy-iris mopidy-spotify mpc_cli
+    msmtp
     mu
-    offlineimap
+    openssl
+    pavucontrol
     physlock
-    qutebrowser
-    redshift
     spectacle
+    scrot
     sublime3
     unzip
     virtualbox
@@ -102,20 +124,29 @@
     enableAdobePDF = true;
   };
 
-  # Allow Editing Keyboard Backlight without Password
-  security.sudo.extraConfig = ''
-    jasonmj nixos = (root) NOPASSWD: /run/current-system/sw/bin/mount
-    jasonmj nixos = (root) NOPASSWD: /sys/class/leds/
-  '';
-
   # Locate Config
-  services.locate.prunePaths = ["/boot" "/etc" "/home/jasonmj/.config" "/home/jasonmj/.cache" "/home/jasonmj/Maildir" "/nix/store" "/tmp" "/var/cache" "/var/lock" "/var/run" "/var/spool" "/var/tmp"];
+  services.locate.enable = true;
+  services.locate.interval = "*/15 * * * *";
+  services.locate.extraFlags = [
+    "--prunenames='.cache .config .emacs-backups .emacs.d .git .insync-trash .kde .local .mail mix .mozilla .offlineimap .themes  node_modules .ssh tmp'"
+    " --prunepaths='/bin /boot /dev /mnt /nix/store /path /proc /root /run /sddm /sys /system /usr /var'"
+  ];
+  services.locate.locate = pkgs.mlocate;
 
   # Setup Mopidy
   services.mopidy = {
     enable = true;
     extensionPackages = [ pkgs.mopidy-spotify pkgs.mopidy-iris ];
     configuration = ''
+      [mpd]
+      enabled = true
+      hostname = 127.0.0.1
+
+      [http]
+      enabled = true
+      hostname = 127.0.0.1
+      port = 6680
+
       [local]
       enabled = true
       media_dir = /home/jasonmj/Music
@@ -126,6 +157,9 @@
       password = Misomonster1
       client_id = 05839c1b-39a5-4250-bc13-fe900df0c6d2
       client_secret = Bco0YN3TzeeebulrpELi_2E-bCrnggJb1Gay3ILdjU8=
+
+      [audio]
+      output = pulsesink server=127.0.0.1
     '';
   };
 
@@ -176,17 +210,19 @@
       InputMethod=
 
       [Theme]
-      Current=clairvoyance
+      Current=nixos
       ThemeDir=/sddm/themes
       FacesDir=/run/current-system/sw/share/sddm/faces
       EnableAvatars=false
     '';
-    theme = "nixos";
   };
   services.xserver.windowManager.exwm.enable = true;
 
   # Enable sound.
   sound.enable = true;
+
+  # Automatic updates every day
+  system.autoUpgrade.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.extraUsers.jasonmj = {
