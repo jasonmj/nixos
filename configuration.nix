@@ -41,6 +41,7 @@
       fira-code
       hack-font
       inconsolata
+      iosevka
       source-code-pro
     ];
   };
@@ -57,11 +58,15 @@
     "127.0.0.1" = [
       "ashevillecreativeleague.test"
       "chcmadisoncountync.test"
+      "cleanenergy.test"
+      "cleanenergyactionfund.test"
       "bountifulcities.test"
       "diamondrubber.test"
+      "dogwoodalliance.test"
       "fsl-backend.test"
       "fullsteamlabs.test"
       "johnsonhilliard.test"
+      "kingshouseorientalrugs.test"
       "riverartsdistrict.test"
     ];
   };
@@ -75,6 +80,12 @@
   # Keyboard Backlight
   programs.kbdlight.enable = true;
 
+  # Enable Slock
+  programs.slock.enable = true;
+
+  # Disable ssh-agent and use gpg-agent instead
+  programs.ssh.startAgent = false;
+
   # Installed Packages
   environment.systemPackages = with pkgs; [
     ag
@@ -82,22 +93,21 @@
     chromium
     davfs2
     docker docker_compose
-    elixir
+    dunst
     emacs
-    erlang
     filezilla
     firefox
-    fzf
     gimp
     git
     gnumeric
     gnupg
     hfsprogs
+    htop
     insomnia
     insync
     ispell
     isync
-    keychain
+    libnotify
     libreoffice
     mlocate
     mopidy mopidy-iris mopidy-spotify mpc_cli
@@ -105,8 +115,8 @@
     mu
     openssl
     pavucontrol
-    physlock
-    spectacle
+    python
+    ripgrep
     scrot
     sublime3
     unzip
@@ -116,6 +126,9 @@
     xorg.xbacklight
     xbindkeys xbindkeys-config xdotool
     xorg.xmodmap
+    yarn
+    yubikey-manager
+    yubikey-personalization
     zip
   ];
 
@@ -126,12 +139,17 @@
 
   # Locate Config
   services.locate.enable = true;
-  services.locate.interval = "*/15 * * * *";
+  services.locate.interval = "hourly";
   services.locate.extraFlags = [
-    "--prunenames='.cache .config .emacs-backups .emacs.d .git .insync-trash .kde .local .mail mix .mozilla .offlineimap .themes  node_modules .ssh tmp'"
+    "--prunenames='.cache .config .emacs.d .git .insync-trash .kde .local .mail mix .mozilla .themes  node_modules org .ssh tmp'"
     " --prunepaths='/bin /boot /dev /mnt /nix/store /path /proc /root /run /sddm /sys /system /usr /var'"
   ];
   services.locate.locate = pkgs.mlocate;
+
+  # Power Event Config
+  services.logind.extraConfig = ''
+  HandlePowerKey=ignore
+  '';
 
   # Setup Mopidy
   services.mopidy = {
@@ -166,17 +184,20 @@
   # Macbook Pro Fan Support
   services.mbpfan.enable = true;
 
-  # Screen Locking
-  services.physlock = {
-    enable = true;
-    lockOn.suspend = true;
-  };
+  # Enable pcscd for smartcard support
+  services.pcscd.enable = true;
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
+  # UDEV Packages
+  services.udev.packages = with pkgs; [
+    yubikey-personalization
+  ];
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
+  services.xserver.startDbusSession = true;
   services.xserver.layout = "us";
 
   # Enable touchpad support.
@@ -241,10 +262,6 @@
   virtualisation.docker.enable = true;
   virtualisation.virtualbox.host.enable = true;
 
-  # This value determines the NixOS release with which your system is to be
-  # compatible, in order to avoid breaking some software such as database
-  # servers. You should change this only after NixOS release notes say you
-  # should.
-  system.stateVersion = "18.03"; # Did you read the comment?
+  system.stateVersion = "18.03";
 
 }
