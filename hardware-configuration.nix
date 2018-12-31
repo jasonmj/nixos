@@ -31,6 +31,10 @@
   hardware.pulseaudio = {
     enable = true;
     package = pkgs.pulseaudioFull;
+    extraConfig = "
+                  load-module module-alsa-sink device=hdmi:0
+                  load-module module-combine-sink sink_name=combined
+                  ";
     tcp = {
       enable = true;
       anonymousClients.allowedIpRanges = ["127.0.0.1"];

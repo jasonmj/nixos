@@ -1,12 +1,11 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 { config, pkgs, ... }:
 
-{
+let
+  unstable = import <nixos-unstable> {};
+in {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      ./battery-notifier.nix
       ./hardware-configuration.nix
     ];
 
@@ -37,42 +36,43 @@
   # Fonts
   fonts = {
     fonts = with pkgs; [
-      fira
       fira-code
-      hack-font
+      fira-code-symbols
       inconsolata
-      iosevka
-      source-code-pro
+			iosevka
     ];
   };
 
-  # automatic gc
+  # Automatic Garbage Collection
   nix.gc.automatic = true;
   nix.gc.dates = "weekly";
   nix.gc.options = "--delete-older-than 30d";
 
-  networking.hostName = "nixos";
+  # Networking Config
   networking.enableB43Firmware = true;
-  networking.networkmanager.enable = true;
+  networking.enableIPv6 = false;
+  networking.hostName = "nixos";
   networking.hosts = {
     "127.0.0.1" = [
-      "ashevillecreativeleague.test"
-      "chcmadisoncountync.test"
+      "appalshop.test"
       "cleanenergy.test"
       "cleanenergyactionfund.test"
-      "bountifulcities.test"
       "diamondrubber.test"
       "dogwoodalliance.test"
+      "ecoexplore.test"
       "fsl-backend.test"
       "fullsteamlabs.test"
       "johnsonhilliard.test"
-      "kingshouseorientalrugs.test"
       "riverartsdistrict.test"
+      "summitsearchsolutions.test"
+      "toggl-podio.test"
     ];
   };
-  networking.enableIPv6 = false;
+  networking.networkmanager.enable = true;
 
+  # Package Configuration
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.permittedInsecurePackages = ["webkitgtk-2.4.11"];
 
   # Set your time zone.
   time.timeZone = "America/New_York";
@@ -88,13 +88,19 @@
 
   # Installed Packages
   environment.systemPackages = with pkgs; [
-    ag
+    alacritty
+    arp-scan
+    bat
+    beam.packages.erlangR21.elixir_1_7
     bind
     chromium
+    clojure
     davfs2
     docker docker_compose
     dunst
     emacs
+    emacsPackagesNg.melpaPackages.pdf-tools
+    file
     filezilla
     firefox
     gimp
@@ -103,26 +109,44 @@
     gnupg
     hfsprogs
     htop
+    imagemagick
+    inotify-tools
     insomnia
     insync
     ispell
     isync
+    lastpass-cli
     libnotify
     libreoffice
+    leiningen
+    unstable.linphone
     mlocate
     mopidy mopidy-iris mopidy-spotify mpc_cli
     msmtp
     mu
+    nmap
+    nodejs
+    nodePackages.javascript-typescript-langserver
+    nodePackages.tern
     openssl
     pavucontrol
     python
     ripgrep
+    sass
     scrot
+    smbnetfs
+    sqlite
     sublime3
+    traceroute
+    unstable.toggldesktop
     unzip
     virtualbox
+    vscode
+    w3m
+    watchman
     wget
     whois
+    wordnet
     xorg.xbacklight
     xbindkeys xbindkeys-config xdotool
     xorg.xmodmap
@@ -133,17 +157,26 @@
   ];
 
   nixpkgs.config.chromium = {
-    enableAdobeFlash = true;
+    enableAdobeFlash = false;
     enableAdobePDF = true;
   };
 
+  # Avahi mDNS Service
+  services.avahi = {
+    enable = true;
+    interfaces = ["wlp3s0"];
+    publish.addresses = false;
+    nssmdns = true;
+  };
+
+  # Battery Notifier
+  services.batteryNotifier.enable = true;
+
   # Locate Config
   services.locate.enable = true;
-  services.locate.interval = "hourly";
-  services.locate.extraFlags = [
-    "--prunenames='.cache .config .emacs.d .git .insync-trash .kde .local .mail mix .mozilla .themes  node_modules org .ssh tmp'"
-    " --prunepaths='/bin /boot /dev /mnt /nix/store /path /proc /root /run /sddm /sys /system /usr /var'"
-  ];
+  services.locate.interval = "minutely";
+  services.locate.pruneNames = [".cache" ".config" ".emacs.d" ".git" ".insync-trash" ".kde" ".local" ".mail" "mix" ".mozilla" ".themes" "node_modules" ".ssh" "tmp"];
+  services.locate.prunePaths = ["/bin" "/boot" "/dev" "/mnt" "/nix" "/store" "/path" "/proc" "/root" "/run" "/sddm" "/sys" "/system" "/usr" "/var"];
   services.locate.locate = pkgs.mlocate;
 
   # Power Event Config
@@ -190,6 +223,9 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
+  # Enable the systemd DNS resolver daemon
+  services.resolved.enable = true;
+
   # UDEV Packages
   services.udev.packages = with pkgs; [
     yubikey-personalization
@@ -200,7 +236,7 @@
   services.xserver.startDbusSession = true;
   services.xserver.layout = "us";
 
-  # Enable touchpad support.
+  # Touchpad Configuration
   services.xserver.synaptics = {
     enable = true;
     tapButtons = true;
@@ -223,7 +259,6 @@
   };
 
   # Setup the Desktop Environment.
-  services.xserver.desktopManager.plasma5.enable = true;
   services.xserver.displayManager.sddm = {
     enable = true;
     extraConfig = ''
@@ -231,7 +266,7 @@
       InputMethod=
 
       [Theme]
-      Current=nixos
+      Current=minimal
       ThemeDir=/sddm/themes
       FacesDir=/run/current-system/sw/share/sddm/faces
       EnableAvatars=false
@@ -242,8 +277,17 @@
   # Enable sound.
   sound.enable = true;
 
-  # Automatic updates every day
-  system.autoUpgrade.enable = true;
+  # System version, channel, and upgrade settings
+  system = {
+    autoUpgrade.enable = true;
+    autoUpgrade.channel = https://nixos.org/channels/nixos-18.09;
+    stateVersion = "18.09";
+  };
+
+  # systemd timeout settings
+  systemd.extraConfig = ''
+    DefaultTimeoutStopSec=1s
+  '';
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.extraUsers.jasonmj = {
@@ -259,9 +303,10 @@
     ];
   };
 
+  # User nslcd daemon (nss-pam-ldapd) to handle LDAP lookups for NSS and PAM
+  users.ldap.daemon.enable = true;
+
   virtualisation.docker.enable = true;
   virtualisation.virtualbox.host.enable = true;
-
-  system.stateVersion = "18.03";
 
 }
