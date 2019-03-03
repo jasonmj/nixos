@@ -57,15 +57,19 @@ in {
       "appalshop.test"
       "cleanenergy.test"
       "cleanenergyactionfund.test"
+      "cleanwp.test"
       "diamondrubber.test"
       "dogwoodalliance.test"
       "ecoexplore.test"
       "fsl-backend.test"
-      "fullsteamlabs.test"
       "johnsonhilliard.test"
       "riverartsdistrict.test"
       "summitsearchsolutions.test"
       "toggl-podio.test"
+      "wncworkerscenter.test"
+    ];
+    "0.0.0.0" = [
+      "fullsteamlabs.test"
     ];
   };
   networking.networkmanager.enable = true;
@@ -103,8 +107,10 @@ in {
     file
     filezilla
     firefox
+    fish
     gimp
     git
+    google-drive-ocamlfuse
     gnumeric
     gnupg
     hfsprogs
@@ -115,11 +121,11 @@ in {
     insync
     ispell
     isync
-    lastpass-cli
+    libinput
+    libinput-gestures
     libnotify
     libreoffice
     leiningen
-    unstable.linphone
     mlocate
     mopidy mopidy-iris mopidy-spotify mpc_cli
     msmtp
@@ -127,29 +133,30 @@ in {
     nmap
     nodejs
     nodePackages.javascript-typescript-langserver
+    nodePackages.prettier
     nodePackages.tern
     openssl
     pavucontrol
-    python
+    python3
     ripgrep
+    rofi
     sass
     scrot
+    signal-desktop
     smbnetfs
     sqlite
     sublime3
     traceroute
-    unstable.toggldesktop
+    tree
     unzip
-    virtualbox
+    vim
     vscode
-    w3m
     watchman
     wget
     whois
     wordnet
-    xorg.xbacklight
     xbindkeys xbindkeys-config xdotool
-    xorg.xmodmap
+    xorg.xbacklight xorg.xev xorg.xmodmap
     yarn
     yubikey-manager
     yubikey-personalization
@@ -237,18 +244,10 @@ in {
   services.xserver.layout = "us";
 
   # Touchpad Configuration
-  services.xserver.synaptics = {
+  services.xserver.libinput = {
     enable = true;
-    tapButtons = true;
-    fingersMap = [ 1 3 2 ];
-    twoFingerScroll = true;
-    minSpeed = "0.75";
-    maxSpeed = "5.5";
-    accelFactor = "0.015";
-    palmDetect = true;
-    palmMinWidth = 8;
-    palmMinZ = 20;
-    scrollDelta = -65;
+    disableWhileTyping = true;
+    naturalScrolling = true;
   };
 
   # Enable Redshift as a Service
@@ -298,6 +297,7 @@ in {
     extraGroups = [
       "davfs"
       "docker"
+      "input"
       "networkmanager"
       "wheel"
     ];
