@@ -62,6 +62,7 @@ in {
       "dogwoodalliance.test"
       "ecoexplore.test"
       "fsl-backend.test"
+      "ilsag.test"
       "johnsonhilliard.test"
       "riverartsdistrict.test"
       "summitsearchsolutions.test"
@@ -97,13 +98,14 @@ in {
     bat
     beam.packages.erlangR21.elixir_1_7
     bind
+    browsh
     chromium
     clojure
     davfs2
     docker docker_compose
     dunst
     emacs
-    emacsPackagesNg.melpaPackages.pdf-tools
+    emacsPackagesNg.pdf-tools
     file
     filezilla
     firefox
@@ -129,6 +131,7 @@ in {
     mlocate
     mopidy mopidy-iris mopidy-spotify mpc_cli
     msmtp
+    mplayer
     mu
     nmap
     nodejs
@@ -142,13 +145,17 @@ in {
     rofi
     sass
     scrot
+    shutter
     signal-desktop
+    simplescreenrecorder
     smbnetfs
     sqlite
     sublime3
+    tmux
     traceroute
     tree
     unzip
+    usbutils
     vim
     vscode
     watchman
