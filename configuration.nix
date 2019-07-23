@@ -1,29 +1,19 @@
 { config, pkgs, ... }:
 
-let
-  unstable = import <nixos-unstable> {};
-in {
+{
   imports =
     [
       ./battery-notifier.nix
       ./hardware-configuration.nix
     ];
 
-  # Use the systemd-boot EFI boot loader.
+  # Use the systemd-boot EFI boot loader
   boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = false;
-  boot.initrd.luks.devices = [
-    {
-      name = "root";
-      device = "/dev/disk/by-uuid/bda6825e-c8c2-410c-bfa2-cc5e11a4bcb4";
-      preLVM = true;
-      allowDiscards = true;
-    }
-  ];
+  boot.loader.efi.canTouchEfiVariables = true;
 
   # Filesystems
   fileSystems."/home/jasonmj/org" = {
-    device = "https://dav.box.com/dav";
+    device = "https://nextcloud.forthelonghaul.net/remote.php/webdav/";
     fsType = "davfs";
     options = [
       "noauto"
@@ -33,57 +23,42 @@ in {
     ];
   };
 
-  # Fonts
-  fonts = {
-    fonts = with pkgs; [
-      fira-code
-      fira-code-symbols
-      inconsolata
-			iosevka
-    ];
-  };
-
   # Automatic Garbage Collection
   nix.gc.automatic = true;
   nix.gc.dates = "weekly";
   nix.gc.options = "--delete-older-than 30d";
 
-  # Networking Config
-  networking.enableB43Firmware = true;
-  networking.enableIPv6 = false;
-  networking.hostName = "nixos";
+  networking.hostName = "nixos"; # Define your hostname.
+  networking.networkmanager.enable = true;
   networking.hosts = {
     "127.0.0.1" = [
-      "appalshop.test"
       "cleanenergy.test"
-      "cleanenergyactionfund.test"
       "cleanwp.test"
       "diamondrubber.test"
-      "dogwoodalliance.test"
       "ecoexplore.test"
+      "hosting.fullsteamlabs.test"
       "fsl-backend.test"
       "ilsag.test"
       "johnsonhilliard.test"
       "riverartsdistrict.test"
-      "summitsearchsolutions.test"
       "toggl-podio.test"
       "wncworkerscenter.test"
+      "weavervilleartsafari.test"
     ];
     "0.0.0.0" = [
       "fullsteamlabs.test"
     ];
   };
-  networking.networkmanager.enable = true;
 
-  # Package Configuration
-  nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.permittedInsecurePackages = ["webkitgtk-2.4.11"];
-
-  # Set your time zone.
-  time.timeZone = "America/New_York";
-
-  # Keyboard Backlight
-  programs.kbdlight.enable = true;
+  # Fonts
+  fonts = {
+    fontconfig.dpi = 120;
+    fonts = with pkgs; [
+      fira-code
+      fira-code-symbols
+      iosevka
+    ];
+  };
 
   # Enable Slock
   programs.slock.enable = true;
@@ -91,69 +66,64 @@ in {
   # Disable ssh-agent and use gpg-agent instead
   programs.ssh.startAgent = false;
 
-  # Installed Packages
+  # Packages
+  nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
     alacritty
     arp-scan
+    avrdude
     bat
-    beam.packages.erlangR21.elixir_1_7
-    bind
-    browsh
     chromium
-    clojure
     davfs2
-    docker docker_compose
+    docker
+    docker_compose
+    dolphin
     dunst
     emacs
     emacsPackagesNg.pdf-tools
-    file
+    exa
     filezilla
     firefox
     fish
-    gimp
     git
-    google-drive-ocamlfuse
+    gimp
+    gftp
     gnumeric
     gnupg
-    hfsprogs
+    heroku
     htop
-    imagemagick
     inotify-tools
     insomnia
-    insync
     ispell
     isync
-    libinput
     libinput-gestures
-    libnotify
     libreoffice
-    leiningen
     mlocate
     mopidy mopidy-iris mopidy-spotify mpc_cli
-    msmtp
     mplayer
-    mu
     nmap
     nodejs
     nodePackages.javascript-typescript-langserver
     nodePackages.prettier
     nodePackages.tern
+    nodePackages.typescript
+    openshot-qt
     openssl
     pavucontrol
     python3
+    remmina
     ripgrep
     rofi
-    sass
     scrot
     shutter
     signal-desktop
     simplescreenrecorder
-    smbnetfs
     sqlite
     sublime3
     tmux
     traceroute
     tree
+    typora
     unzip
     usbutils
     vim
@@ -164,38 +134,19 @@ in {
     wordnet
     xbindkeys xbindkeys-config xdotool
     xorg.xbacklight xorg.xev xorg.xmodmap
-    yarn
     yubikey-manager
     yubikey-personalization
     zip
+    zoom-us
   ];
-
-  nixpkgs.config.chromium = {
-    enableAdobeFlash = false;
-    enableAdobePDF = true;
-  };
-
-  # Avahi mDNS Service
-  services.avahi = {
-    enable = true;
-    interfaces = ["wlp3s0"];
-    publish.addresses = false;
-    nssmdns = true;
-  };
 
   # Battery Notifier
   services.batteryNotifier.enable = true;
 
-  # Locate Config
-  services.locate.enable = true;
-  services.locate.interval = "minutely";
-  services.locate.pruneNames = [".cache" ".config" ".emacs.d" ".git" ".insync-trash" ".kde" ".local" ".mail" "mix" ".mozilla" ".themes" "node_modules" ".ssh" "tmp"];
-  services.locate.prunePaths = ["/bin" "/boot" "/dev" "/mnt" "/nix" "/store" "/path" "/proc" "/root" "/run" "/sddm" "/sys" "/system" "/usr" "/var"];
-  services.locate.locate = pkgs.mlocate;
-
-  # Power Event Config
-  services.logind.extraConfig = ''
-  HandlePowerKey=ignore
+  # ACPI
+  services.acpid.enable = true;
+  services.acpid.powerEventCommands = ''
+    slock
   '';
 
   # Setup Mopidy
@@ -228,43 +179,39 @@ in {
     '';
   };
 
-  # Macbook Pro Fan Support
-  services.mbpfan.enable = true;
+  # Locate Config
+  services.locate.enable = true;
+  services.locate.interval = "minutely";
+  services.locate.pruneNames = [".cache" ".config" ".emacs.d" ".git" ".local" ".mail" "mix" ".mozilla" ".themes" "node_modules" ".ssh" "tmp"];
+  services.locate.prunePaths = ["/bin" "/boot" "/dev" "/mnt" "/nix" "/store" "/path" "/proc" "/root" "/run" "/sddm" "/sys" "/system" "/usr" "/var"];
+  services.locate.locate = pkgs.mlocate;
+  # networking.firewall.enable = false;
 
-  # Enable pcscd for smartcard support
-  services.pcscd.enable = true;
+  # Enable sound.
+  sound.enable = true;
 
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  # Enable the systemd DNS resolver daemon
-  services.resolved.enable = true;
-
-  # UDEV Packages
-  services.udev.packages = with pkgs; [
-    yubikey-personalization
-  ];
-
-  # Enable the X11 windowing system.
+  # Enable the X11 windowing system
   services.xserver.enable = true;
-  services.xserver.startDbusSession = true;
   services.xserver.layout = "us";
 
-  # Touchpad Configuration
+  # Keyboard Sensitivity
+  services.xserver.autoRepeatDelay = 150;
+  services.xserver.autoRepeatInterval = 30;
+
+  # Enable touchpad support
   services.xserver.libinput = {
     enable = true;
+    accelSpeed = "0.5";
+    clickMethod = "none";
     disableWhileTyping = true;
     naturalScrolling = true;
+    tapping = false;
   };
 
-  # Enable Redshift as a Service
-  services.redshift = {
-    enable = true;
-    latitude = "35.849549";
-    longitude = "-82.738750";
-  };
+  # Enable EXWM
+  services.xserver.windowManager.exwm.enable = true;
 
-  # Setup the Desktop Environment.
+  # Enable SDDM
   services.xserver.displayManager.sddm = {
     enable = true;
     extraConfig = ''
@@ -278,42 +225,45 @@ in {
       EnableAvatars=false
     '';
   };
-  services.xserver.windowManager.exwm.enable = true;
 
-  # Enable sound.
-  sound.enable = true;
-
-  # System version, channel, and upgrade settings
-  system = {
-    autoUpgrade.enable = true;
-    autoUpgrade.channel = https://nixos.org/channels/nixos-18.09;
-    stateVersion = "18.09";
+  # Enable Redshift as a Service
+  services.redshift = {
+    enable = true;
+    latitude = "35.849549";
+    longitude = "-82.738750";
   };
 
-  # systemd timeout settings
-  systemd.extraConfig = ''
-    DefaultTimeoutStopSec=1s
-  '';
+  # Enable pcscd for smartcard support
+  services.pcscd.enable = true;
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.extraUsers.jasonmj = {
+  # UDEV Packages
+  services.udev.packages = with pkgs; [
+    avrdude
+    libmtp.bin
+    yubikey-personalization
+  ];
+
+  # Set your time zone.
+  time.timeZone = "America/New_York";
+
+  # Define a user account
+  users.groups.davfs2 = {};
+  users.users.jasonmj = {
     description = "Jason Johnson";
     isNormalUser = true;
     uid = 1000;
-    group = "users";
-    extraGroups = [
-      "davfs"
-      "docker"
-      "input"
-      "networkmanager"
-      "wheel"
-    ];
+    group= "users";
+    extraGroups = [ "davfs2" "docker" "input" "networkmanager" "wheel" ];
+  };
+  users.users.davfs2 = {
+    group = "davfs2";
   };
 
   # User nslcd daemon (nss-pam-ldapd) to handle LDAP lookups for NSS and PAM
   users.ldap.daemon.enable = true;
 
   virtualisation.docker.enable = true;
-  virtualisation.virtualbox.host.enable = true;
+  # virtualisation.virtualbox.host.enable = true;
 
+  system.stateVersion = "19.03";
 }

@@ -8,25 +8,36 @@
     [ <nixpkgs/nixos/modules/installer/scan/not-detected.nix>
     ];
 
-  boot.initrd.availableKernelModules = [ "uhci_hcd" "ehci_pci" "ahci" "firewire_ohci" "usbhid" "usb_storage" "sd_mod" "sdhci_pci" ];
-  boot.kernelModules = [ "kvm-intel" "wl" ];
-  boot.extraModulePackages = [ config.boot.kernelPackages.broadcom_sta ];
+  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "sd_mod" ];
+  boot.kernelModules = [ "kvm-intel" ];
+  boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/b1602638-aa5e-4970-8b84-a28cfc686ab7";
-      fsType = "ext4";
+    { device = "/dev/disk/by-uuid/97fab64e-bfa7-4d0b-a9ab-b1eeb0fa26f2";
+      fsType = "btrfs";
+      options = [ "subvol=nixos" ];
     };
 
+  boot.initrd.luks.devices."nixos-enc".device = "/dev/disk/by-uuid/cbb9a4d9-b7c8-442f-baf9-b79b7610f5be";
+
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/F02A-1C2A";
+    { device = "/dev/disk/by-uuid/F474-F912";
       fsType = "vfat";
     };
 
-  swapDevices =
-    [ { device = "/dev/disk/by-uuid/41a63ffd-bc3b-48f8-b87c-4dbb15ac3883"; }
-    ];
+  swapDevices = [ ];
 
-  nix.maxJobs = lib.mkDefault 4;
+  # Video Drivers
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.opengl.enable = true;
+  hardware.opengl.extraPackages = [ pkgs.linuxPackages.nvidia_x11.out ];
+  # hardware.bumblebee.enable = true;
+  # hardware.bumblebee.connectDisplay = true;
+  # hardware.nvidia.optimus_prime.enable = true;
+  # hardware.nvidia.optimus_prime.nvidiaBusId = "PCI:01:00.0";
+  # hardware.nvidia.optimus_prime.intelBusId = "PCI:0:2:0";
+
+  nix.maxJobs = lib.mkDefault 12;
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
   hardware.pulseaudio = {
     enable = true;
@@ -40,5 +51,11 @@
       anonymousClients.allowedIpRanges = ["127.0.0.1"];
     };
   };
-  hardware.bluetooth.enable = true;
+  hardware.bluetooth = {
+    enable = true;
+    extraConfig = "
+      [General]
+      Enable=Source,Sink,Media,Socket
+    ";
+  };
 }
