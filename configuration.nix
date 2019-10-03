@@ -36,18 +36,20 @@
       "cleanwp.test"
       "diamondrubber.test"
       "ecoexplore.test"
-      "hosting.fullsteamlabs.test"
+      "go.fullsteamlabs.test"
       "fsl-backend.test"
       "ilsag.test"
       "johnsonhilliard.test"
       "riverartsdistrict.test"
       "toggl-podio.test"
+      "theuniformproject.test"
       "wncworkerscenter.test"
       "weavervilleartsafari.test"
     ];
     "0.0.0.0" = [
       "fullsteamlabs.test"
     ];
+    "172.31.98.1" = ["aruba.odyssys.net"];
   };
 
   # Fonts
@@ -57,6 +59,7 @@
       fira-code
       fira-code-symbols
       iosevka
+      nerdfonts
     ];
   };
 
@@ -72,8 +75,10 @@
     alacritty
     arp-scan
     avrdude
+    bash-completion
     bat
     chromium
+    cmake
     davfs2
     docker
     docker_compose
@@ -81,15 +86,20 @@
     dunst
     emacs
     emacsPackagesNg.pdf-tools
+    emacsPackagesNg.emacs-libvterm
+    emacs-all-the-icons-fonts
     exa
     filezilla
     firefox
     fish
+    gcc
     git
     gimp
     gftp
+    gnumake
     gnumeric
     gnupg
+    gparted
     heroku
     htop
     inotify-tools
@@ -98,6 +108,8 @@
     isync
     libinput-gestures
     libreoffice
+    libtool
+    libvterm
     mlocate
     mopidy mopidy-iris mopidy-spotify mpc_cli
     mplayer
@@ -109,6 +121,7 @@
     nodePackages.typescript
     openshot-qt
     openssl
+    openvpn
     pavucontrol
     python3
     remmina
@@ -124,9 +137,11 @@
     traceroute
     tree
     typora
+    unrar
     unzip
     usbutils
     vim
+    virtualbox
     vscode
     watchman
     wget
@@ -195,8 +210,8 @@
   services.xserver.layout = "us";
 
   # Keyboard Sensitivity
-  services.xserver.autoRepeatDelay = 150;
-  services.xserver.autoRepeatInterval = 30;
+  services.xserver.autoRepeatDelay = 160;
+  services.xserver.autoRepeatInterval = 20;
 
   # Enable touchpad support
   services.xserver.libinput = {
@@ -263,7 +278,7 @@
   users.ldap.daemon.enable = true;
 
   virtualisation.docker.enable = true;
-  # virtualisation.virtualbox.host.enable = true;
+  virtualisation.virtualbox.host.enable = true;
 
   system.stateVersion = "19.03";
 }
