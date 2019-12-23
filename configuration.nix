@@ -1,5 +1,11 @@
 { config, pkgs, ... }:
 
+let
+  unstableTarball =
+    fetchTarball
+      https://github.com/NixOS/nixpkgs-channels/archive/nixos-unstable.tar.gz;
+in
+
 {
   imports =
     [
@@ -32,23 +38,28 @@
   networking.networkmanager.enable = true;
   networking.hosts = {
     "127.0.0.1" = [
+      "acaexplained.test"
       "cleanenergy.test"
       "cleanwp.test"
+      "concordpsychotherapy.test"
       "diamondrubber.test"
+      "docbiddle.test"
       "ecoexplore.test"
       "go.fullsteamlabs.test"
+      "fracturedappalachia.test"
       "fsl-backend.test"
+      "icrt-iot-training.test"
       "ilsag.test"
       "johnsonhilliard.test"
+      "newprairiesolar.test"
       "riverartsdistrict.test"
+      "summitsearchsolutions.test"
       "toggl-podio.test"
       "theuniformproject.test"
       "wncworkerscenter.test"
       "weavervilleartsafari.test"
     ];
-    "0.0.0.0" = [
-      "fullsteamlabs.test"
-    ];
+    "0.0.0.0" = ["fullsteamlabs.test"];
     "172.31.98.1" = ["aruba.odyssys.net"];
   };
 
@@ -63,6 +74,9 @@
     ];
   };
 
+  # Enable dconf
+  programs.dconf.enable = true;
+
   # Enable Slock
   programs.slock.enable = true;
 
@@ -70,13 +84,24 @@
   programs.ssh.startAgent = false;
 
   # Packages
+  nixpkgs.config = {
+    packageOverrides = pkgs: {
+      unstable = import unstableTarball {
+        config = config.nixpkgs.config;
+      };
+    };
+  };
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
+    automake
+    autoconf
     alacritty
     arp-scan
+    avahi
     avrdude
     bash-completion
     bat
+    bluez
     chromium
     cmake
     davfs2
@@ -86,16 +111,19 @@
     dunst
     emacs
     emacsPackagesNg.pdf-tools
-    emacsPackagesNg.emacs-libvterm
+    unstable.emacsPackages.emacs-libvterm
     emacs-all-the-icons-fonts
+    entr
+    unstable.erlangR22
+    unstable.elixir_1_9
     exa
     filezilla
     firefox
     fish
+    fwup
     gcc
     git
     gimp
-    gftp
     gnumake
     gnumeric
     gnupg
@@ -109,9 +137,9 @@
     libinput-gestures
     libreoffice
     libtool
-    libvterm
+    unstable.libvterm-neovim
+    lxqt.lxqt-openssh-askpass
     mlocate
-    mopidy mopidy-iris mopidy-spotify mpc_cli
     mplayer
     nmap
     nodejs
@@ -122,8 +150,10 @@
     openshot-qt
     openssl
     openvpn
+    paprefs
     pavucontrol
     python3
+    rebar3
     remmina
     ripgrep
     rofi
@@ -131,8 +161,10 @@
     shutter
     signal-desktop
     simplescreenrecorder
+    squashfsTools
     sqlite
     sublime3
+    teamviewer
     tmux
     traceroute
     tree
@@ -151,6 +183,7 @@
     xorg.xbacklight xorg.xev xorg.xmodmap
     yubikey-manager
     yubikey-personalization
+    zeal
     zip
     zoom-us
   ];
@@ -158,41 +191,19 @@
   # Battery Notifier
   services.batteryNotifier.enable = true;
 
+  # Avahi mDNS Service
+  services.avahi = {
+    enable = true;
+    interfaces = ["wlp0s20f3"];
+    publish.addresses = false;
+    nssmdns = true;
+  };
+
   # ACPI
   services.acpid.enable = true;
   services.acpid.powerEventCommands = ''
     slock
   '';
-
-  # Setup Mopidy
-  services.mopidy = {
-    enable = true;
-    extensionPackages = [ pkgs.mopidy-spotify pkgs.mopidy-iris ];
-    configuration = ''
-      [mpd]
-      enabled = true
-      hostname = 127.0.0.1
-
-      [http]
-      enabled = true
-      hostname = 127.0.0.1
-      port = 6680
-
-      [local]
-      enabled = true
-      media_dir = /home/jasonmj/Music
-
-      [spotify]
-      enabled = true
-      username = laurakeyes9
-      password = Misomonster1
-      client_id = 05839c1b-39a5-4250-bc13-fe900df0c6d2
-      client_secret = Bco0YN3TzeeebulrpELi_2E-bCrnggJb1Gay3ILdjU8=
-
-      [audio]
-      output = pulsesink server=127.0.0.1
-    '';
-  };
 
   # Locate Config
   services.locate.enable = true;
@@ -207,6 +218,15 @@
 
   # Enable the X11 windowing system
   services.xserver.enable = true;
+
+  # Prevent locked screen bypass by switching VTs or killing the X server with Ctrl+Alt+Backspace
+  services.xserver.config = ''
+    Section "ServerFlags"
+             Option "DontVTSwitch" "True"
+             Option "DontZap"      "True"
+     EndSection
+  '';
+
   services.xserver.layout = "us";
 
   # Keyboard Sensitivity
@@ -225,10 +245,14 @@
 
   # Enable EXWM
   services.xserver.windowManager.exwm.enable = true;
+  services.xserver.windowManager.default = "exwm";
+  services.xserver.desktopManager.default = "none";
 
   # Enable SDDM
   services.xserver.displayManager.sddm = {
     enable = true;
+    autoLogin.enable = true;
+    autoLogin.user = "jasonmj";
     extraConfig = ''
       [General]
       InputMethod=
@@ -261,14 +285,15 @@
   # Set your time zone.
   time.timeZone = "America/New_York";
 
-  # Define a user account
+  # Define Users and Groups
   users.groups.davfs2 = {};
+  users.groups.mlocate = {};
   users.users.jasonmj = {
     description = "Jason Johnson";
     isNormalUser = true;
     uid = 1000;
     group= "users";
-    extraGroups = [ "davfs2" "docker" "input" "networkmanager" "wheel" ];
+    extraGroups = [ "davfs2" "docker" "input" "mlocate" "networkmanager" "wheel" ];
   };
   users.users.davfs2 = {
     group = "davfs2";
@@ -280,5 +305,5 @@
   virtualisation.docker.enable = true;
   virtualisation.virtualbox.host.enable = true;
 
-  system.stateVersion = "19.03";
+  system.stateVersion = "19.09";
 }

@@ -4,9 +4,7 @@
 { config, lib, pkgs, ... }:
 
 {
-  imports =
-    [ <nixpkgs/nixos/modules/installer/scan/not-detected.nix>
-    ];
+  imports = [ <nixpkgs/nixos/modules/installer/scan/not-detected.nix>];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "sd_mod" ];
   boot.kernelModules = [ "kvm-intel" ];
@@ -20,10 +18,10 @@
 
   boot.initrd.luks.devices."nixos-enc".device = "/dev/disk/by-uuid/cbb9a4d9-b7c8-442f-baf9-b79b7610f5be";
 
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/F474-F912";
-      fsType = "vfat";
-    };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-uuid/F474-F912";
+    fsType = "vfat";
+  };
 
   swapDevices = [ ];
 
@@ -31,11 +29,30 @@
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.opengl.enable = true;
   hardware.opengl.extraPackages = [ pkgs.linuxPackages.nvidia_x11.out ];
-  # hardware.bumblebee.enable = true;
-  # hardware.bumblebee.connectDisplay = true;
-  # hardware.nvidia.optimus_prime.enable = true;
-  # hardware.nvidia.optimus_prime.nvidiaBusId = "PCI:01:00.0";
-  # hardware.nvidia.optimus_prime.intelBusId = "PCI:0:2:0";
+
+  # These settings work, but external displays do not
+  # services.xserver = {
+  #   videoDrivers = [ "intel" ];
+  #   deviceSection = ''BusID "PCI:0:2:0"'';
+  # };
+  # hardware.bumblebee = {
+  #   enable = true;
+  #   connectDisplay = true;
+  # };
+
+  # nixpkgs.config.packageOverrides = pkgs: rec {
+  #   bumblebee = pkgs.bumblebee.override {
+  #     extraNvidiaDeviceOptions = ''
+  #       Option "ProbeAllGpus" "false"
+  #       Option "AllowEmptyInitialConfiguration"
+  #     EndSection
+
+  #     Section "Screen"
+  #       Identifier "Default Screen"
+  #       Device "DiscreteNvidia"
+  #     '';
+  #   };
+  # };
 
   nix.maxJobs = lib.mkDefault 12;
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
@@ -44,7 +61,12 @@
     package = pkgs.pulseaudioFull;
     extraConfig = "
                   load-module module-alsa-sink device=hdmi:0
+                  load-module module-bluetooth-discover
+                  load-module module-bluetooth-policy
                   load-module module-combine-sink sink_name=combined
+                  load-module module-zeroconf-discover
+                  load-module module-zeroconf-publish
+                  load-module module-raop-discover
                   ";
     tcp = {
       enable = true;
