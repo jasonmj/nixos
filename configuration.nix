@@ -38,26 +38,23 @@ in
   networking.networkmanager.enable = true;
   networking.hosts = {
     "127.0.0.1" = [
-      "acaexplained.test"
       "cleanenergy.test"
       "cleanwp.test"
-      "concordpsychotherapy.test"
       "diamondrubber.test"
-      "docbiddle.test"
       "ecoexplore.test"
+      "equinoxenvironmental.test"
       "go.fullsteamlabs.test"
-      "fracturedappalachia.test"
+      "keyespottery.test"
+      "mt.freecycle.org"
       "fsl-backend.test"
       "icrt-iot-training.test"
       "ilsag.test"
-      "johnsonhilliard.test"
+      "newprairieconstruction.test"
       "newprairiesolar.test"
       "riverartsdistrict.test"
+      "scan-harbor.test"
       "summitsearchsolutions.test"
       "toggl-podio.test"
-      "theuniformproject.test"
-      "wncworkerscenter.test"
-      "weavervilleartsafari.test"
     ];
     "0.0.0.0" = ["fullsteamlabs.test"];
     "172.31.98.1" = ["aruba.odyssys.net"];
@@ -71,6 +68,7 @@ in
       fira-code-symbols
       iosevka
       nerdfonts
+      noto-fonts
     ];
   };
 
@@ -83,6 +81,10 @@ in
   # Disable ssh-agent and use gpg-agent instead
   programs.ssh.startAgent = false;
 
+  programs.gnupg.agent.enable = true;
+  programs.gnupg.agent.enableSSHSupport = true;
+  programs.gnupg.agent.pinentryFlavor = "emacs";
+
   # Packages
   nixpkgs.config = {
     packageOverrides = pkgs: {
@@ -93,99 +95,132 @@ in
   };
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
+    atom
     automake
     autoconf
     alacritty
+    arandr
     arp-scan
     avahi
     avrdude
     bash-completion
     bat
-    bluez
+    blueman
+    bluezFull
+    bluez-tools
     chromium
     cmake
     davfs2
+    dex
     docker
     docker_compose
-    dolphin
     dunst
-    emacs
+    unstable.emacs
     emacsPackagesNg.pdf-tools
-    unstable.emacsPackages.emacs-libvterm
     emacs-all-the-icons-fonts
-    entr
     unstable.erlangR22
     unstable.elixir_1_9
     exa
     filezilla
     firefox
     fish
-    fwup
     gcc
     git
     gimp
+    unstable.google-drive-ocamlfuse
     gnumake
     gnumeric
     gnupg
     gparted
     heroku
     htop
+    imagemagick
     inotify-tools
     insomnia
     ispell
     isync
-    libinput-gestures
+    killall
     libreoffice
+    libfprint
     libtool
-    unstable.libvterm-neovim
     lxqt.lxqt-openssh-askpass
     mlocate
     mplayer
+    mumble
+    linphone
+    my-polybar
+    networkmanagerapplet
     nmap
     nodejs
     nodePackages.javascript-typescript-langserver
+    nodePackages.jsdoc
     nodePackages.prettier
     nodePackages.tern
     nodePackages.typescript
+    unstable.nodePackages.bash-language-server
+    unstable.nodePackages.dockerfile-language-server-nodejs
+    unstable.nodePackages.vscode-css-languageserver-bin
+    unstable.nodePackages.vue-language-server
     openshot-qt
     openssl
     openvpn
+    pandoc
     paprefs
+    pasystray
     pavucontrol
+    # pinentry-curses
+    pharo
+    php72
+    php72Packages.composer
     python3
+    qemu
+    # qmk_firmware
     rebar3
     remmina
     ripgrep
     rofi
+    sass
+    screenkey
     scrot
     shutter
     signal-desktop
     simplescreenrecorder
     squashfsTools
     sqlite
+    stalonetray
     sublime3
     teamviewer
+    telnet
     tmux
     traceroute
     tree
-    typora
     unrar
     unzip
     usbutils
     vim
-    virtualbox
-    vscode
+    vscodium
     watchman
     wget
     whois
     wordnet
+    xbanish
     xbindkeys xbindkeys-config xdotool
     xorg.xbacklight xorg.xev xorg.xmodmap
+    yarn
     yubikey-manager
     yubikey-personalization
     zeal
     zip
     zoom-us
+  ];
+
+  # Nixpkgs overlays
+  nixpkgs.overlays = [
+    (self: super: {
+      my-polybar = super.polybar.override {
+        pulseSupport = true;
+      };
+    })
   ];
 
   # Battery Notifier
@@ -201,9 +236,6 @@ in
 
   # ACPI
   services.acpid.enable = true;
-  services.acpid.powerEventCommands = ''
-    slock
-  '';
 
   # Locate Config
   services.locate.enable = true;
@@ -211,27 +243,51 @@ in
   services.locate.pruneNames = [".cache" ".config" ".emacs.d" ".git" ".local" ".mail" "mix" ".mozilla" ".themes" "node_modules" ".ssh" "tmp"];
   services.locate.prunePaths = ["/bin" "/boot" "/dev" "/mnt" "/nix" "/store" "/path" "/proc" "/root" "/run" "/sddm" "/sys" "/system" "/usr" "/var"];
   services.locate.locate = pkgs.mlocate;
-  # networking.firewall.enable = false;
+
+  # fprint
+  services.fprintd.enable = true;
+
+  # fwupd
+  services.fwupd.enable = true;
+
+  # Firewall
+  networking.firewall.enable = true;
+  networking.firewall.logRefusedConnections = true;
+
+  services.logind.lidSwitch = "ignore";
+  services.logind.extraConfig = "
+    HandlePowerKey=suspend
+    HandleSuspendKey=suspend
+    HandleHibernateKey=suspend
+    IdleAction=ignore
+  ";
 
   # Enable sound.
   sound.enable = true;
+
+  # USB Guard
+  # services.usbguard.enable = true;
 
   # Enable the X11 windowing system
   services.xserver.enable = true;
 
   # Prevent locked screen bypass by switching VTs or killing the X server with Ctrl+Alt+Backspace
+  # Option "DontVTSwitch" "True"
   services.xserver.config = ''
     Section "ServerFlags"
-             Option "DontVTSwitch" "True"
-             Option "DontZap"      "True"
-     EndSection
+      Option "DontZap"      "True"
+      Option "BlankTime"    "0"
+      Option "StandbyTime"  "0"
+      Option "SuspendTime"  "0"
+      Option "OffTime"      "0"
+    EndSection
   '';
 
   services.xserver.layout = "us";
 
   # Keyboard Sensitivity
-  services.xserver.autoRepeatDelay = 160;
-  services.xserver.autoRepeatInterval = 20;
+  services.xserver.autoRepeatDelay = 130;
+  services.xserver.autoRepeatInterval = 12;
 
   # Enable touchpad support
   services.xserver.libinput = {
@@ -239,20 +295,24 @@ in
     accelSpeed = "0.5";
     clickMethod = "none";
     disableWhileTyping = true;
-    naturalScrolling = true;
+    naturalScrolling = false;
     tapping = false;
   };
 
-  # Enable EXWM
-  services.xserver.windowManager.exwm.enable = true;
-  services.xserver.windowManager.default = "exwm";
-  services.xserver.desktopManager.default = "none";
+  #
+  services.xserver.displayManager.session = [
+    {
+      manage = "window";
+      name = "emacs";
+      start = ''
+        exec dbus-launch --exit-with-session ${pkgs.unstable.emacs}/bin/emacs
+      '';
+    }
+  ];
 
   # Enable SDDM
   services.xserver.displayManager.sddm = {
     enable = true;
-    autoLogin.enable = true;
-    autoLogin.user = "jasonmj";
     extraConfig = ''
       [General]
       InputMethod=
@@ -268,8 +328,10 @@ in
   # Enable Redshift as a Service
   services.redshift = {
     enable = true;
-    latitude = "35.849549";
-    longitude = "-82.738750";
+  };
+  location = {
+    latitude = 35.849549;
+    longitude = -82.738750;
   };
 
   # Enable pcscd for smartcard support
@@ -293,7 +355,7 @@ in
     isNormalUser = true;
     uid = 1000;
     group= "users";
-    extraGroups = [ "davfs2" "docker" "input" "mlocate" "networkmanager" "wheel" ];
+    extraGroups = [ "bluetooth" "davfs2" "docker" "input" "mlocate" "networkmanager" "wheel" ];
   };
   users.users.davfs2 = {
     group = "davfs2";
@@ -305,5 +367,5 @@ in
   virtualisation.docker.enable = true;
   virtualisation.virtualbox.host.enable = true;
 
-  system.stateVersion = "19.09";
+  system.stateVersion = "20.03";
 }

@@ -63,6 +63,7 @@
                   load-module module-alsa-sink device=hdmi:0
                   load-module module-bluetooth-discover
                   load-module module-bluetooth-policy
+                  load-module module-bluez5-discover
                   load-module module-combine-sink sink_name=combined
                   load-module module-zeroconf-discover
                   load-module module-zeroconf-publish
@@ -75,9 +76,7 @@
   };
   hardware.bluetooth = {
     enable = true;
-    extraConfig = "
-      [General]
-      Enable=Source,Sink,Media,Socket
-    ";
+    config = { General = { Enable = "Source,Sink,Media,Socket"; }; };
+    package = pkgs.bluezFull;
   };
 }
