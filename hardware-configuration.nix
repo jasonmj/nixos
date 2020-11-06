@@ -7,7 +7,7 @@
   imports = [ <nixpkgs/nixos/modules/installer/scan/not-detected.nix>];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "sd_mod" ];
-  boot.kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = [ "kvm-intel" "cp210x" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
@@ -28,7 +28,7 @@
   # Video Drivers
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.opengl.enable = true;
-  hardware.opengl.extraPackages = [ pkgs.linuxPackages.nvidia_x11.out ];
+  # hardware.opengl.extraPackages = [ pkgs.linuxPackages.nvidia_x11.out ];
 
   # These settings work, but external displays do not
   # services.xserver = {
@@ -55,7 +55,7 @@
   # };
 
   nix.maxJobs = lib.mkDefault 12;
-  powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
+  # powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
   hardware.pulseaudio = {
     enable = true;
     package = pkgs.pulseaudioFull;

@@ -34,17 +34,28 @@ in
   nix.gc.dates = "weekly";
   nix.gc.options = "--delete-older-than 30d";
 
+  # Trusted Users
+  nix.trustedUsers = [ "root" "jasonmj" ];
+
+  # Firewall
+  networking.firewall.enable = true;
+  networking.firewall.logRefusedConnections = true;
+
+  # Networking
   networking.hostName = "nixos"; # Define your hostname.
   networking.networkmanager.enable = true;
   networking.hosts = {
     "127.0.0.1" = [
+      "bankruptcypros.test"
       "cleanenergy.test"
       "cleanwp.test"
+      "dogwoodalliance.test"
       "diamondrubber.test"
       "ecoexplore.test"
       "equinoxenvironmental.test"
       "go.fullsteamlabs.test"
       "keyespottery.test"
+      "freecycle.test"
       "mt.freecycle.org"
       "fsl-backend.test"
       "icrt-iot-training.test"
@@ -53,10 +64,13 @@ in
       "newprairiesolar.test"
       "riverartsdistrict.test"
       "scan-harbor.test"
+      "staff.brchs.test"
       "summitsearchsolutions.test"
+      "teflpros.test"
       "toggl-podio.test"
     ];
     "0.0.0.0" = ["fullsteamlabs.test"];
+    "192.168.0.11" = ["pitimer.config"];
     "172.31.98.1" = ["aruba.odyssys.net"];
   };
 
@@ -71,6 +85,9 @@ in
       noto-fonts
     ];
   };
+
+  # Android Studio
+  programs.adb.enable = true;
 
   # Enable dconf
   programs.dconf.enable = true;
@@ -99,6 +116,7 @@ in
     automake
     autoconf
     alacritty
+    androidStudioPackages.dev
     arandr
     arp-scan
     avahi
@@ -109,29 +127,37 @@ in
     bluezFull
     bluez-tools
     chromium
+    clojure
     cmake
     davfs2
     dex
+    direnv
     docker
     docker_compose
+    dpkg
     dunst
     unstable.emacs
     emacsPackagesNg.pdf-tools
     emacs-all-the-icons-fonts
-    unstable.erlangR22
-    unstable.elixir_1_9
+    erlang
+    elixir
+    esptool
     exa
+    fastlane
     filezilla
     firefox
     fish
+    jdk
+    jre
     gcc
     git
     gimp
-    unstable.google-drive-ocamlfuse
+    google-drive-ocamlfuse
     gnumake
     gnumeric
     gnupg
     gparted
+    graphviz
     heroku
     htop
     imagemagick
@@ -139,10 +165,12 @@ in
     insomnia
     ispell
     isync
+    # keybase
     killall
     libreoffice
     libfprint
     libtool
+    lsof
     lxqt.lxqt-openssh-askpass
     mlocate
     mplayer
@@ -150,6 +178,8 @@ in
     linphone
     my-polybar
     networkmanagerapplet
+    networkmanager-l2tp
+    nix-prefetch-git
     nmap
     nodejs
     nodePackages.javascript-typescript-langserver
@@ -157,10 +187,8 @@ in
     nodePackages.prettier
     nodePackages.tern
     nodePackages.typescript
-    unstable.nodePackages.bash-language-server
-    unstable.nodePackages.dockerfile-language-server-nodejs
-    unstable.nodePackages.vscode-css-languageserver-bin
-    unstable.nodePackages.vue-language-server
+    nodePackages.bash-language-server
+    nodePackages.dockerfile-language-server-nodejs
     openshot-qt
     openssl
     openvpn
@@ -168,35 +196,38 @@ in
     paprefs
     pasystray
     pavucontrol
-    # pinentry-curses
-    pharo
+    picocom
     php72
     php72Packages.composer
+    pv
     python3
+    python38Packages.xdot
     qemu
-    # qmk_firmware
     rebar3
     remmina
     ripgrep
     rofi
     sass
-    screenkey
+    sassc
+    screen
     scrot
     shutter
     signal-desktop
     simplescreenrecorder
+    slack
     squashfsTools
     sqlite
     stalonetray
     sublime3
+    tclap
     teamviewer
     telnet
     tmux
     traceroute
     tree
-    unrar
     unzip
     usbutils
+    xdeltaUnstable
     vim
     vscodium
     watchman
@@ -205,11 +236,11 @@ in
     wordnet
     xbanish
     xbindkeys xbindkeys-config xdotool
+    xl2tpd
     xorg.xbacklight xorg.xev xorg.xmodmap
     yarn
     yubikey-manager
     yubikey-personalization
-    zeal
     zip
     zoom-us
   ];
@@ -223,126 +254,145 @@ in
     })
   ];
 
-  # Battery Notifier
-  services.batteryNotifier.enable = true;
+  # Services
+  services = {
+    # ACPI
+    acpid.enable = true;
 
-  # Avahi mDNS Service
-  services.avahi = {
-    enable = true;
-    interfaces = ["wlp0s20f3"];
-    publish.addresses = false;
-    nssmdns = true;
+    # Avahi mDNS Service
+    avahi = {
+      enable = true;
+      interfaces = ["wlp0s20f3"];
+      publish.addresses = false;
+      nssmdns = true;
+    };
+
+    # Battery Notifier
+    batteryNotifier.enable = true;
+
+    # Locate Config
+    locate = {
+      enable = true;
+      interval = "minutely";
+      pruneNames = [".cache" ".config" ".emacs.d" ".git" ".local" ".mail" "mix" ".mozilla" ".themes" "node_modules" ".ssh" "tmp"];
+      prunePaths = ["/bin" "/boot" "/dev" "/mnt" "/nix" "/store" "/path" "/proc" "/root" "/run" "/sddm" "/sys" "/system" "/usr" "/var"];
+      locate = pkgs.mlocate;
+    };
+
+    # Lorri
+    lorri.enable = true;
+
+    # fprint
+    # fprintd.enable = true;
+
+    # fwupd
+    fwupd.enable = true;
+
+    # keybase
+    # keybase.enable = true;
+
+    # Laptop Lid & Power Button
+    logind.lidSwitch = "ignore";
+    logind.extraConfig = "
+      HandlePowerKey=suspend
+      HandleSuspendKey=suspend
+      HandleHibernateKey=suspend
+      IdleAction=ignore
+    ";
+
+    # Picom Composite Manager
+    picom.enable = true;
+
+    # USB Guard
+    # usbguard.enable = true;
+
+    # L2TP VPN
+    xl2tpd.enable = true;
+
+    # X11 Window Server
+    xserver = {
+      enable = true;
+
+      # Keyboard Sensitivity
+      autoRepeatDelay = 130;
+      autoRepeatInterval = 12;
+      layout = "us";
+
+      # Option "DontVTSwitch" "True" # Prevent switching ttys
+      config = ''
+        Section "ServerFlags"
+          Option "DontZap"      "True"
+          Option "BlankTime"    "0"
+          Option "StandbyTime"  "0"
+          Option "SuspendTime"  "0"
+          Option "OffTime"      "0"
+        EndSection
+      '';
+
+      # Touchpad support
+      libinput = {
+        enable = true;
+        accelSpeed = "0.3";
+        clickMethod = "none";
+        disableWhileTyping = true;
+        naturalScrolling = false;
+        tapping = false;
+      };
+
+      # Display Manager
+      displayManager = {
+        sddm = {
+          enable = true;
+          extraConfig = ''
+            [General]
+            InputMethod=
+
+            [Theme]
+            Current=minimal
+            ThemeDir=/sddm/themes
+            FacesDir=/run/current-system/sw/share/sddm/faces
+            EnableAvatars=false
+          '';
+        };
+
+        session = [
+          {
+            manage = "window";
+            name = "emacs";
+            start = ''
+              exec dbus-launch --exit-with-session ${pkgs.emacs}/bin/emacs -mm
+            '';
+          }
+        ];
+      };
+    };
+
+    # Enable Redshift as a Service
+    redshift.enable = true;
+
+    # Enable pcscd for smartcard support
+    pcscd.enable = true;
+
+    # UDEV Packages
+    # udev.extraRules = ''
+    #   # cp210x usb driver
+    #   SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="00492F60", SYMLINK+="ttySLAB0"
+    # '';
+    udev.packages = with pkgs; [
+      avrdude
+      esptool
+      libmtp.bin
+      yubikey-personalization
+    ];
   };
-
-  # ACPI
-  services.acpid.enable = true;
-
-  # Locate Config
-  services.locate.enable = true;
-  services.locate.interval = "minutely";
-  services.locate.pruneNames = [".cache" ".config" ".emacs.d" ".git" ".local" ".mail" "mix" ".mozilla" ".themes" "node_modules" ".ssh" "tmp"];
-  services.locate.prunePaths = ["/bin" "/boot" "/dev" "/mnt" "/nix" "/store" "/path" "/proc" "/root" "/run" "/sddm" "/sys" "/system" "/usr" "/var"];
-  services.locate.locate = pkgs.mlocate;
-
-  # fprint
-  services.fprintd.enable = true;
-
-  # fwupd
-  services.fwupd.enable = true;
-
-  # Firewall
-  networking.firewall.enable = true;
-  networking.firewall.logRefusedConnections = true;
-
-  services.logind.lidSwitch = "ignore";
-  services.logind.extraConfig = "
-    HandlePowerKey=suspend
-    HandleSuspendKey=suspend
-    HandleHibernateKey=suspend
-    IdleAction=ignore
-  ";
 
   # Enable sound.
   sound.enable = true;
 
-  # USB Guard
-  # services.usbguard.enable = true;
-
-  # Enable the X11 windowing system
-  services.xserver.enable = true;
-
-  # Prevent locked screen bypass by switching VTs or killing the X server with Ctrl+Alt+Backspace
-  # Option "DontVTSwitch" "True"
-  services.xserver.config = ''
-    Section "ServerFlags"
-      Option "DontZap"      "True"
-      Option "BlankTime"    "0"
-      Option "StandbyTime"  "0"
-      Option "SuspendTime"  "0"
-      Option "OffTime"      "0"
-    EndSection
-  '';
-
-  services.xserver.layout = "us";
-
-  # Keyboard Sensitivity
-  services.xserver.autoRepeatDelay = 130;
-  services.xserver.autoRepeatInterval = 12;
-
-  # Enable touchpad support
-  services.xserver.libinput = {
-    enable = true;
-    accelSpeed = "0.5";
-    clickMethod = "none";
-    disableWhileTyping = true;
-    naturalScrolling = false;
-    tapping = false;
-  };
-
-  #
-  services.xserver.displayManager.session = [
-    {
-      manage = "window";
-      name = "emacs";
-      start = ''
-        exec dbus-launch --exit-with-session ${pkgs.unstable.emacs}/bin/emacs
-      '';
-    }
-  ];
-
-  # Enable SDDM
-  services.xserver.displayManager.sddm = {
-    enable = true;
-    extraConfig = ''
-      [General]
-      InputMethod=
-
-      [Theme]
-      Current=minimal
-      ThemeDir=/sddm/themes
-      FacesDir=/run/current-system/sw/share/sddm/faces
-      EnableAvatars=false
-    '';
-  };
-
-  # Enable Redshift as a Service
-  services.redshift = {
-    enable = true;
-  };
   location = {
     latitude = 35.849549;
     longitude = -82.738750;
   };
-
-  # Enable pcscd for smartcard support
-  services.pcscd.enable = true;
-
-  # UDEV Packages
-  services.udev.packages = with pkgs; [
-    avrdude
-    libmtp.bin
-    yubikey-personalization
-  ];
 
   # Set your time zone.
   time.timeZone = "America/New_York";
@@ -355,7 +405,7 @@ in
     isNormalUser = true;
     uid = 1000;
     group= "users";
-    extraGroups = [ "bluetooth" "davfs2" "docker" "input" "mlocate" "networkmanager" "wheel" ];
+    extraGroups = [ "adbusers" "bluetooth" "davfs2" "dialout" "docker" "input" "mlocate" "networkmanager" "wheel" ];
   };
   users.users.davfs2 = {
     group = "davfs2";
