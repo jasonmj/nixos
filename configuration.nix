@@ -4,6 +4,14 @@ let
   unstableTarball =
     fetchTarball
       https://github.com/NixOS/nixpkgs-channels/archive/nixos-unstable.tar.gz;
+  unstable = import unstableTarball {
+    config = config.nixpkgs.config;
+  };
+  emacsWithPackages = (unstable.emacsPackagesGen unstable.emacs).emacsWithPackages (epkgs: ([
+    epkgs.pdf-tools
+    epkgs.multi-vterm
+    epkgs.vterm
+  ]));
 in
 
 {
@@ -57,6 +65,7 @@ in
       "keyespottery.test"
       "freecycle.test"
       "mt.freecycle.org"
+      "freecycle.org"
       "fsl-backend.test"
       "icrt-iot-training.test"
       "ilsag.test"
@@ -132,23 +141,21 @@ in
     davfs2
     dex
     direnv
+    discord
     docker
     docker_compose
     dpkg
     dunst
-    unstable.emacs
-    emacsPackagesNg.pdf-tools
+    emacsWithPackages
     emacs-all-the-icons-fonts
-    erlang
-    elixir
+    unstable.erlangR23
+    unstable.beam.packages.erlangR23.elixir
     esptool
     exa
     fastlane
     filezilla
     firefox
     fish
-    jdk
-    jre
     gcc
     git
     gimp
@@ -160,12 +167,12 @@ in
     graphviz
     heroku
     htop
-    imagemagick
     inotify-tools
     insomnia
     ispell
     isync
-    # keybase
+    jdk
+    jre
     killall
     libreoffice
     libfprint
@@ -179,6 +186,7 @@ in
     my-polybar
     networkmanagerapplet
     networkmanager-l2tp
+    next
     nix-prefetch-git
     nmap
     nodejs
@@ -189,6 +197,7 @@ in
     nodePackages.typescript
     nodePackages.bash-language-server
     nodePackages.dockerfile-language-server-nodejs
+    openscad
     openshot-qt
     openssl
     openvpn
@@ -214,7 +223,6 @@ in
     shutter
     signal-desktop
     simplescreenrecorder
-    slack
     squashfsTools
     sqlite
     stalonetray
@@ -225,6 +233,7 @@ in
     tmux
     traceroute
     tree
+    typora
     unzip
     usbutils
     xdeltaUnstable
@@ -287,9 +296,6 @@ in
 
     # fwupd
     fwupd.enable = true;
-
-    # keybase
-    # keybase.enable = true;
 
     # Laptop Lid & Power Button
     logind.lidSwitch = "ignore";
@@ -374,10 +380,6 @@ in
     pcscd.enable = true;
 
     # UDEV Packages
-    # udev.extraRules = ''
-    #   # cp210x usb driver
-    #   SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="00492F60", SYMLINK+="ttySLAB0"
-    # '';
     udev.packages = with pkgs; [
       avrdude
       esptool
