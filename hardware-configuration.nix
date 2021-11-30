@@ -7,7 +7,7 @@
   imports = [ <nixpkgs/nixos/modules/installer/scan/not-detected.nix>];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "sd_mod" ];
-  boot.kernelModules = [ "kvm-intel" "cp210x" ];
+  boot.kernelModules = [ "kvm-intel"  ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
@@ -28,34 +28,17 @@
   # Video Drivers
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.opengl.enable = true;
-  # hardware.opengl.extraPackages = [ pkgs.linuxPackages.nvidia_x11.out ];
-
-  # These settings work, but external displays do not
-  # services.xserver = {
-  #   videoDrivers = [ "intel" ];
-  #   deviceSection = ''BusID "PCI:0:2:0"'';
-  # };
-  # hardware.bumblebee = {
-  #   enable = true;
-  #   connectDisplay = true;
-  # };
-
-  # nixpkgs.config.packageOverrides = pkgs: rec {
-  #   bumblebee = pkgs.bumblebee.override {
-  #     extraNvidiaDeviceOptions = ''
-  #       Option "ProbeAllGpus" "false"
-  #       Option "AllowEmptyInitialConfiguration"
-  #     EndSection
-
-  #     Section "Screen"
-  #       Identifier "Default Screen"
-  #       Device "DiscreteNvidia"
-  #     '';
-  #   };
-  # };
 
   nix.maxJobs = lib.mkDefault 12;
-  # powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
+  hardware.bluetooth = {
+    enable = true;
+    settings = {
+      General = {
+        Enable = "Source,Sink,Media,Socket";
+      };
+    };
+    package = pkgs.bluezFull;
+  };
   hardware.pulseaudio = {
     enable = true;
     package = pkgs.pulseaudioFull;
@@ -74,9 +57,10 @@
       anonymousClients.allowedIpRanges = ["127.0.0.1"];
     };
   };
-  hardware.bluetooth = {
+  hardware.trackpoint = {
     enable = true;
-    config = { General = { Enable = "Source,Sink,Media,Socket"; }; };
-    package = pkgs.bluezFull;
+    emulateWheel = false;
+    sensitivity = 140;
+    speed = 115;
   };
 }

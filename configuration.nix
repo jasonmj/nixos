@@ -3,7 +3,7 @@
 let
   unstableTarball =
     fetchTarball
-      https://github.com/NixOS/nixpkgs-channels/archive/nixos-unstable.tar.gz;
+      https://nixos.org/channels/nixpkgs-unstable/nixexprs.tar.xz;
   unstable = import unstableTarball {
     config = config.nixpkgs.config;
   };
@@ -17,13 +17,20 @@ in
 {
   imports =
     [
-      ./battery-notifier.nix
       ./hardware-configuration.nix
     ];
 
   # Use the systemd-boot EFI boot loader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # mDNS Resolution
+  systemd.network.networks.wlp0s20f3.networkConfig.MulticastDNS = true;
+  # system.nssDatabases.hosts = [ "nerves-jasonmj" ];
+  # services.resolved = {
+  #       enable = true;
+  #       fallbackDns = ["8.8.8.8" "2001:4860:4860::8844"];
+  # };
 
   # Filesystems
   fileSystems."/home/jasonmj/org" = {
@@ -46,24 +53,28 @@ in
   nix.trustedUsers = [ "root" "jasonmj" ];
 
   # Firewall
-  networking.firewall.enable = true;
-  networking.firewall.logRefusedConnections = true;
+  networking.firewall.enable = false;
+  networking.firewall.allowedTCPPorts = [ 8000 9630 19000 19001 19002 19003 ];
 
   # Networking
   networking.hostName = "nixos"; # Define your hostname.
   networking.networkmanager.enable = true;
   networking.hosts = {
     "127.0.0.1" = [
+      "artswrite.test"
+      "ashevilletheatre.test"
       "bankruptcypros.test"
       "cleanenergy.test"
       "cleanwp.test"
       "dogwoodalliance.test"
-      "diamondrubber.test"
       "ecoexplore.test"
       "equinoxenvironmental.test"
       "go.fullsteamlabs.test"
+      "golocalasheville.test"
       "keyespottery.test"
+      "litnotice.test"
       "freecycle.test"
+      "johnsonhilliard.test"
       "mt.freecycle.org"
       "freecycle.org"
       "fsl-backend.test"
@@ -71,9 +82,10 @@ in
       "ilsag.test"
       "newprairieconstruction.test"
       "newprairiesolar.test"
+      "plasmaui.test"
       "riverartsdistrict.test"
+      "resource-realty.test"
       "scan-harbor.test"
-      "staff.brchs.test"
       "summitsearchsolutions.test"
       "teflpros.test"
       "toggl-podio.test"
@@ -90,13 +102,11 @@ in
       fira-code
       fira-code-symbols
       iosevka
-      nerdfonts
-      noto-fonts
     ];
   };
 
   # Android Studio
-  programs.adb.enable = true;
+  # programs.adb.enable = true;
 
   # Enable dconf
   programs.dconf.enable = true;
@@ -121,13 +131,12 @@ in
   };
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
-    atom
     automake
     autoconf
     alacritty
-    androidStudioPackages.dev
+    # androidStudioPackages.dev
     arandr
-    arp-scan
+    # arp-scan
     avahi
     avrdude
     bash-completion
@@ -135,36 +144,41 @@ in
     blueman
     bluezFull
     bluez-tools
+    # cargo
     chromium
     clojure
+    unstable.clojure-lsp
+    clj-kondo
     cmake
     davfs2
-    dex
+    deja-dup
+    dex # .desktop file opener
     direnv
-    discord
+    unstable.discord
     docker
     docker_compose
-    dpkg
+    # dpkg
     dunst
     emacsWithPackages
+    # emacs
     emacs-all-the-icons-fonts
-    unstable.erlangR23
-    unstable.beam.packages.erlangR23.elixir
-    esptool
+    unstable.erlangR24
+    unstable.beam.packages.erlangR24.elixir
+    unstable.elixir_ls
+    # esptool
     exa
-    fastlane
+    feh
     filezilla
     firefox
     fish
+    flameshot
+    # fritzing
     gcc
     git
-    gimp
-    google-drive-ocamlfuse
+    # gimp
     gnumake
-    gnumeric
     gnupg
     gparted
-    graphviz
     heroku
     htop
     inotify-tools
@@ -173,70 +187,63 @@ in
     isync
     jdk
     jre
-    killall
     libreoffice
-    libfprint
+    # libfprint
     libtool
     lsof
     lxqt.lxqt-openssh-askpass
-    mlocate
+    # maim
     mplayer
-    mumble
-    linphone
+    # mumble
     my-polybar
     networkmanagerapplet
     networkmanager-l2tp
-    next
-    nix-prefetch-git
-    nmap
+    # nmap
     nodejs
     nodePackages.javascript-typescript-langserver
-    nodePackages.jsdoc
     nodePackages.prettier
-    nodePackages.tern
     nodePackages.typescript
     nodePackages.bash-language-server
-    nodePackages.dockerfile-language-server-nodejs
-    openscad
+    # nodePackages.dockerfile-language-server-nodejs
     openshot-qt
     openssl
     openvpn
+    pamixer
     pandoc
     paprefs
     pasystray
     pavucontrol
     picocom
-    php72
-    php72Packages.composer
-    pv
+    php74
+    php74Packages.composer
+    pkg-config
+    pulseaudio
     python3
-    python38Packages.xdot
-    qemu
+    python38Packages.pip
+    # python38Packages.xdot
     rebar3
     remmina
+    ripcord
     ripgrep
+    # rlwrap
     rofi
     sass
     sassc
     screen
     scrot
     shutter
-    signal-desktop
+    unstable.signal-desktop
     simplescreenrecorder
     squashfsTools
     sqlite
-    stalonetray
-    sublime3
-    tclap
+    # unstable.tdlib # for telegram
     teamviewer
+    # teams
     telnet
     tmux
     traceroute
     tree
-    typora
     unzip
-    usbutils
-    xdeltaUnstable
     vim
     vscodium
     watchman
@@ -263,6 +270,9 @@ in
     })
   ];
 
+  # RT Kit
+  # security.rtkit.enable = true;
+
   # Services
   services = {
     # ACPI
@@ -271,31 +281,18 @@ in
     # Avahi mDNS Service
     avahi = {
       enable = true;
-      interfaces = ["wlp0s20f3"];
-      publish.addresses = false;
       nssmdns = true;
+      publish = {
+        enable = true;
+        domain = true;
+        addresses = true;
+        userServices = true;
+      };
+      interfaces = ["wlp0s20f3" "enp0s31f6"];
     };
 
-    # Battery Notifier
-    batteryNotifier.enable = true;
-
-    # Locate Config
-    locate = {
-      enable = true;
-      interval = "minutely";
-      pruneNames = [".cache" ".config" ".emacs.d" ".git" ".local" ".mail" "mix" ".mozilla" ".themes" "node_modules" ".ssh" "tmp"];
-      prunePaths = ["/bin" "/boot" "/dev" "/mnt" "/nix" "/store" "/path" "/proc" "/root" "/run" "/sddm" "/sys" "/system" "/usr" "/var"];
-      locate = pkgs.mlocate;
-    };
-
-    # Lorri
-    lorri.enable = true;
-
-    # fprint
-    # fprintd.enable = true;
-
-    # fwupd
-    fwupd.enable = true;
+    # davfs2 for Webdav
+    davfs2.enable = true;
 
     # Laptop Lid & Power Button
     logind.lidSwitch = "ignore";
@@ -308,9 +305,10 @@ in
 
     # Picom Composite Manager
     picom.enable = true;
+    picom.vSync = true;
 
-    # USB Guard
-    # usbguard.enable = true;
+    # Teamviewer
+    # teamviewer.enable = true;
 
     # L2TP VPN
     xl2tpd.enable = true;
@@ -338,34 +336,34 @@ in
       # Touchpad support
       libinput = {
         enable = true;
-        accelSpeed = "0.3";
-        clickMethod = "none";
-        disableWhileTyping = true;
-        naturalScrolling = false;
-        tapping = false;
+        touchpad = {
+          accelSpeed = "0.3";
+          clickMethod = "none";
+          disableWhileTyping = true;
+          naturalScrolling = false;
+          sendEventsMode = "disabled";
+          tapping = false;
+        };
       };
 
       # Display Manager
       displayManager = {
-        sddm = {
-          enable = true;
-          extraConfig = ''
-            [General]
-            InputMethod=
-
-            [Theme]
-            Current=minimal
-            ThemeDir=/sddm/themes
-            FacesDir=/run/current-system/sw/share/sddm/faces
-            EnableAvatars=false
-          '';
+        sddm.enable = true;
+        sddm.settings = {
+          Theme = {
+            Current= "minimal";
+            ThemeDir= "/share/sddm/themes";
+            FacesDir= "/run/current-system/sw/share/sddm/faces";
+            EnableAvatars = false;
+          };
         };
-
         session = [
           {
             manage = "window";
             name = "emacs";
             start = ''
+              export VISUAL=emacsclient
+              export EDITOR="$VISUAL"
               exec dbus-launch --exit-with-session ${pkgs.emacs}/bin/emacs -mm
             '';
           }
@@ -381,8 +379,8 @@ in
 
     # UDEV Packages
     udev.packages = with pkgs; [
+      android-udev-rules
       avrdude
-      esptool
       libmtp.bin
       yubikey-personalization
     ];
@@ -400,17 +398,12 @@ in
   time.timeZone = "America/New_York";
 
   # Define Users and Groups
-  users.groups.davfs2 = {};
-  users.groups.mlocate = {};
   users.users.jasonmj = {
     description = "Jason Johnson";
     isNormalUser = true;
     uid = 1000;
     group= "users";
-    extraGroups = [ "adbusers" "bluetooth" "davfs2" "dialout" "docker" "input" "mlocate" "networkmanager" "wheel" ];
-  };
-  users.users.davfs2 = {
-    group = "davfs2";
+    extraGroups = [ "adbusers" "bluetooth" "davfs2" "dialout" "docker" "input" "networkmanager" "wheel" ];
   };
 
   # User nslcd daemon (nss-pam-ldapd) to handle LDAP lookups for NSS and PAM
@@ -419,5 +412,5 @@ in
   virtualisation.docker.enable = true;
   virtualisation.virtualbox.host.enable = true;
 
-  system.stateVersion = "20.03";
+  system.stateVersion = "21.05";
 }
