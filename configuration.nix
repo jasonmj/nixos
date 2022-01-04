@@ -1,142 +1,26 @@
 { config, pkgs, ... }:
 
 let
-  unstableTarball =
-    fetchTarball
-      https://nixos.org/channels/nixpkgs-unstable/nixexprs.tar.xz;
-  unstable = import unstableTarball {
-    config = config.nixpkgs.config;
-  };
-  emacsWithPackages = (unstable.emacsPackagesGen unstable.emacs).emacsWithPackages (epkgs: ([
-    epkgs.pdf-tools
-    epkgs.multi-vterm
-    epkgs.vterm
-  ]));
+  unstableTarball = fetchTarball https://nixos.org/channels/nixpkgs-unstable/nixexprs.tar.xz;
+  unstable = import unstableTarball { config = config.nixpkgs.config; };
+  emacsWithPackages = (unstable.emacsPackagesGen unstable.emacs).emacsWithPackages
+    (epkgs: ([epkgs.pdf-tools]));
 in
 
 {
-  imports =
-    [
-      ./hardware-configuration.nix
-    ];
+  imports = [./hardware-configuration.nix];
 
-  # Use the systemd-boot EFI boot loader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # mDNS Resolution
-  systemd.network.networks.wlp0s20f3.networkConfig.MulticastDNS = true;
-  # system.nssDatabases.hosts = [ "nerves-jasonmj" ];
-  # services.resolved = {
-  #       enable = true;
-  #       fallbackDns = ["8.8.8.8" "2001:4860:4860::8844"];
-  # };
-
-  # Filesystems
-  fileSystems."/home/jasonmj/org" = {
-    device = "https://nextcloud.forthelonghaul.net/remote.php/webdav/";
-    fsType = "davfs";
-    options = [
-      "noauto"
-      "uid=1000"
-      "gid=100"
-      "x-systemd.automount"
-    ];
+  boot.loader = {
+    efi.canTouchEfiVariables = true;
+    systemd-boot.enable = true;
   };
 
-  # Automatic Garbage Collection
-  nix.gc.automatic = true;
-  nix.gc.dates = "weekly";
-  nix.gc.options = "--delete-older-than 30d";
-
-  # Trusted Users
-  nix.trustedUsers = [ "root" "jasonmj" ];
-
-  # Firewall
-  networking.firewall.enable = false;
-  networking.firewall.allowedTCPPorts = [ 8000 9630 19000 19001 19002 19003 ];
-
-  # Networking
-  networking.hostName = "nixos"; # Define your hostname.
-  networking.networkmanager.enable = true;
-  networking.hosts = {
-    "127.0.0.1" = [
-      "artswrite.test"
-      "ashevilletheatre.test"
-      "bankruptcypros.test"
-      "cleanenergy.test"
-      "cleanwp.test"
-      "dogwoodalliance.test"
-      "ecoexplore.test"
-      "equinoxenvironmental.test"
-      "go.fullsteamlabs.test"
-      "golocalasheville.test"
-      "keyespottery.test"
-      "litnotice.test"
-      "freecycle.test"
-      "johnsonhilliard.test"
-      "mt.freecycle.org"
-      "freecycle.org"
-      "fsl-backend.test"
-      "icrt-iot-training.test"
-      "ilsag.test"
-      "newprairieconstruction.test"
-      "newprairiesolar.test"
-      "plasmaui.test"
-      "riverartsdistrict.test"
-      "resource-realty.test"
-      "scan-harbor.test"
-      "summitsearchsolutions.test"
-      "teflpros.test"
-      "toggl-podio.test"
-    ];
-    "0.0.0.0" = ["fullsteamlabs.test"];
-    "192.168.0.11" = ["pitimer.config"];
-    "172.31.98.1" = ["aruba.odyssys.net"];
-  };
-
-  # Fonts
-  fonts = {
-    fontconfig.dpi = 120;
-    fonts = with pkgs; [
-      fira-code
-      fira-code-symbols
-      iosevka
-    ];
-  };
-
-  # Android Studio
-  # programs.adb.enable = true;
-
-  # Enable dconf
-  programs.dconf.enable = true;
-
-  # Enable Slock
-  programs.slock.enable = true;
-
-  # Disable ssh-agent and use gpg-agent instead
-  programs.ssh.startAgent = false;
-
-  programs.gnupg.agent.enable = true;
-  programs.gnupg.agent.enableSSHSupport = true;
-  programs.gnupg.agent.pinentryFlavor = "emacs";
-
-  # Packages
-  nixpkgs.config = {
-    packageOverrides = pkgs: {
-      unstable = import unstableTarball {
-        config = config.nixpkgs.config;
-      };
-    };
-  };
-  nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
     automake
     autoconf
     alacritty
-    # androidStudioPackages.dev
     arandr
-    # arp-scan
+    arp-scan
     avahi
     avrdude
     bash-completion
@@ -144,7 +28,7 @@ in
     blueman
     bluezFull
     bluez-tools
-    # cargo
+    cargo
     chromium
     clojure
     unstable.clojure-lsp
@@ -157,29 +41,31 @@ in
     unstable.discord
     docker
     docker_compose
-    # dpkg
     dunst
     emacsWithPackages
-    # emacs
     emacs-all-the-icons-fonts
     unstable.erlangR24
     unstable.beam.packages.erlangR24.elixir
     unstable.elixir_ls
     # esptool
+    etcher
     exa
     feh
+    file
     filezilla
     firefox
     fish
     flameshot
-    # fritzing
+    fritzing
+    fwup
     gcc
     git
-    # gimp
+    gnome.dconf-editor
     gnumake
     gnupg
     gparted
     heroku
+    hicolor-icon-theme
     htop
     inotify-tools
     insomnia
@@ -188,23 +74,23 @@ in
     jdk
     jre
     libreoffice
-    # libfprint
     libtool
     lsof
     lxqt.lxqt-openssh-askpass
-    # maim
+    mopidy-spotify
+    mpd
     mplayer
-    # mumble
+    mumble
+    p7zip
     my-polybar
     networkmanagerapplet
     networkmanager-l2tp
-    # nmap
+    nmap
     nodejs
     nodePackages.javascript-typescript-langserver
     nodePackages.prettier
     nodePackages.typescript
     nodePackages.bash-language-server
-    # nodePackages.dockerfile-language-server-nodejs
     openshot-qt
     openssl
     openvpn
@@ -220,12 +106,10 @@ in
     pulseaudio
     python3
     python38Packages.pip
-    # python38Packages.xdot
     rebar3
     remmina
     ripcord
     ripgrep
-    # rlwrap
     rofi
     sass
     sassc
@@ -233,16 +117,18 @@ in
     scrot
     shutter
     unstable.signal-desktop
+    sierra-gtk-theme
     simplescreenrecorder
     squashfsTools
     sqlite
-    # unstable.tdlib # for telegram
+    unstable.tdlib # for telegram
     teamviewer
-    # teams
+    teams
     telnet
     tmux
     traceroute
     tree
+    universal-ctags
     unzip
     vim
     vscodium
@@ -252,6 +138,7 @@ in
     wordnet
     xbanish
     xbindkeys xbindkeys-config xdotool
+    xfce.xfce4-settings
     xl2tpd
     xorg.xbacklight xorg.xev xorg.xmodmap
     yarn
@@ -261,24 +148,105 @@ in
     zoom-us
   ];
 
-  # Nixpkgs overlays
-  nixpkgs.overlays = [
-    (self: super: {
-      my-polybar = super.polybar.override {
-        pulseSupport = true;
+  location = {
+    latitude = 35.849549;
+    longitude = -82.738750;
+  };
+
+  nix = {
+    gc = { # Garbage Collection
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+    };
+    trustedUsers = [ "root" "jasonmj" ];
+  };
+
+  networking = {
+    firewall = {
+      enable = false;
+      allowedTCPPorts = [ 8000 9630 19000 19001 19002 19003 ];
+    };
+    hosts = {
+      "127.0.0.1" = [
+        "artswrite.test"
+        "ashevilletheatre.test"
+        "bankruptcypros.test"
+        "cleanenergy.test"
+        "cleanwp.test"
+        "dogwoodalliance.test"
+        "ecoexplore.test"
+        "equinoxenvironmental.test"
+        "go.fullsteamlabs.test"
+        "golocalasheville.test"
+        "keyespottery.test"
+        "litnotice.test"
+        "freecycle.test"
+        "johnsonhilliard.test"
+        "mt.freecycle.org"
+        "freecycle.org"
+        "fsl-backend.test"
+        "icrt-iot-training.test"
+        "ilsag.test"
+        "newprairieconstruction.test"
+        "newprairiesolar.test"
+        "plasmaui.test"
+        "riverartsdistrict.test"
+        "resource-realty.test"
+        "scan-harbor.test"
+        "summitsearchsolutions.test"
+        "teflpros.test"
+        "toggl-podio.test"
+      ];
+      "0.0.0.0" = ["fullsteamlabs.test"];
+      "192.168.0.11" = ["pitimer.config"];
+      "172.31.98.1" = ["aruba.odyssys.net"];
+    };
+    hostName = "nixos";
+    networkmanager.enable = true;
+  };
+
+  fonts = {
+    fontconfig.dpi = 120;
+    fonts = with pkgs; [
+      fira-code
+      fira-code-symbols
+      iosevka
+    ];
+  };
+
+  programs = {
+    dconf.enable = true;
+    slock.enable = true;
+    ssh.startAgent = false; # use gpg-agent instead
+    gnupg.agent = {
+      enable = true;
+      enableSSHSupport = true;
+      pinentryFlavor = "emacs";
+    };
+  };
+
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+      packageOverrides = pkgs: {
+        unstable = import unstableTarball {
+          config = config.nixpkgs.config;
+        };
       };
-    })
-  ];
+    };
+    overlays = [
+      (self: super: {
+        my-polybar = super.polybar.override {
+          pulseSupport = true;
+        };
+      })
+    ];
+  };
 
-  # RT Kit
-  # security.rtkit.enable = true;
-
-  # Services
   services = {
-    # ACPI
     acpid.enable = true;
 
-    # Avahi mDNS Service
     avahi = {
       enable = true;
       nssmdns = true;
@@ -291,38 +259,45 @@ in
       interfaces = ["wlp0s20f3" "enp0s31f6"];
     };
 
-    # davfs2 for Webdav
     davfs2.enable = true;
 
-    # Laptop Lid & Power Button
-    logind.lidSwitch = "ignore";
-    logind.extraConfig = "
-      HandlePowerKey=suspend
-      HandleSuspendKey=suspend
-      HandleHibernateKey=suspend
-      IdleAction=ignore
-    ";
+    fwupd.enable = true;
 
-    # Picom Composite Manager
-    picom.enable = true;
-    picom.vSync = true;
+    logind = {
+      extraConfig = "
+        HandlePowerKey=suspend
+        HandleSuspendKey=suspend
+        HandleHibernateKey=suspend
+        IdleAction=ignore
+      ";
+      lidSwitch = "ignore";
+    };
 
-    # Teamviewer
-    # teamviewer.enable = true;
+    # mopidy = {
+    #   enable = true;
+    #   extensionPackages = [
+    #     pkgs.mopidy-iris
+    #     pkgs.mopidy-spotify
+    #   ];
+    #   extraConfigFiles = [ "/share/mopidy/mopidy.conf" ];
+    # };
 
-    # L2TP VPN
+    picom = {
+      enable = true;
+      vSync = true;
+    };
+
     xl2tpd.enable = true;
 
-    # X11 Window Server
     xserver = {
       enable = true;
 
-      # Keyboard Sensitivity
+      # Keyboard
       autoRepeatDelay = 130;
       autoRepeatInterval = 12;
       layout = "us";
 
-      # Option "DontVTSwitch" "True" # Prevent switching ttys
+      # Add Option "DontVTSwitch" "True" to Prevent switching ttys
       config = ''
         Section "ServerFlags"
           Option "DontZap"      "True"
@@ -371,7 +346,6 @@ in
       };
     };
 
-    # Enable Redshift as a Service
     redshift.enable = true;
 
     # Enable pcscd for smartcard support
@@ -386,15 +360,10 @@ in
     ];
   };
 
-  # Enable sound.
   sound.enable = true;
 
-  location = {
-    latitude = 35.849549;
-    longitude = -82.738750;
-  };
+  systemd.network.networks.wlp0s20f3.networkConfig.MulticastDNS = true;
 
-  # Set your time zone.
   time.timeZone = "America/New_York";
 
   # Define Users and Groups
@@ -402,7 +371,7 @@ in
     description = "Jason Johnson";
     isNormalUser = true;
     uid = 1000;
-    group= "users";
+    group = "users";
     extraGroups = [ "adbusers" "bluetooth" "davfs2" "dialout" "docker" "input" "networkmanager" "wheel" ];
   };
 
@@ -412,5 +381,5 @@ in
   virtualisation.docker.enable = true;
   virtualisation.virtualbox.host.enable = true;
 
-  system.stateVersion = "21.05";
+  system.stateVersion = "21.11";
 }
