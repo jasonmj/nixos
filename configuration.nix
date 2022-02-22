@@ -19,10 +19,12 @@ in
     automake
     autoconf
     alacritty
+    androidStudioPackages.dev
     arandr
     arp-scan
     avahi
     avrdude
+    aws
     bash-completion
     bat
     blueman
@@ -31,7 +33,7 @@ in
     cargo
     chromium
     clojure
-    unstable.clojure-lsp
+    clojure-lsp
     clj-kondo
     cmake
     davfs2
@@ -42,7 +44,8 @@ in
     docker
     docker_compose
     dunst
-    emacsWithPackages
+    # emacsWithPackages
+    emacs
     emacs-all-the-icons-fonts
     unstable.erlangR24
     unstable.beam.packages.erlangR24.elixir
@@ -59,6 +62,7 @@ in
     fritzing
     fwup
     gcc
+    gdb
     git
     gnome.dconf-editor
     gnumake
@@ -77,6 +81,7 @@ in
     libtool
     lsof
     lxqt.lxqt-openssh-askpass
+    mlocate
     mopidy-spotify
     mpd
     mplayer
@@ -263,6 +268,34 @@ in
 
     fwupd.enable = true;
 
+    # Locate Config
+    locate = {
+      enable = true;
+      interval = "minutely";
+      pruneNames = [
+        "_build"
+        "node_modules"
+      ];
+      prunePaths = [
+        "/tmp"
+        "/var/tmp"
+        "/var/cache"
+        "/var/lock"
+        "/var/run"
+        "/var/spool"
+        "/nix/store"
+        "/nix/var/log/nix"
+        "/home/jasonmj/.android"
+        "/home/jasonmj/.npm"
+        "/home/jasonmj/.npm-packages"
+        "/home/jasonmj/.nerves"
+        "/home/jasonmj/.cache"
+        "/home/jasonmj/.hex"
+        "/home/jasonmj/virtualbox"
+        "/home/jasonmj/"
+      ];
+    };
+
     logind = {
       extraConfig = "
         HandlePowerKey=suspend
@@ -372,7 +405,7 @@ in
     isNormalUser = true;
     uid = 1000;
     group = "users";
-    extraGroups = [ "adbusers" "bluetooth" "davfs2" "dialout" "docker" "input" "networkmanager" "wheel" ];
+    extraGroups = [ "adbusers" "bluetooth" "davfs2" "dialout" "docker" "input" "mlocate" "networkmanager" "wheel" ];
   };
 
   # User nslcd daemon (nss-pam-ldapd) to handle LDAP lookups for NSS and PAM
