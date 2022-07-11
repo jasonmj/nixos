@@ -3,7 +3,7 @@
 let
   unstableTarball = fetchTarball https://nixos.org/channels/nixpkgs-unstable/nixexprs.tar.xz;
   unstable = import unstableTarball { config = config.nixpkgs.config; };
-  emacsWithPackages = (unstable.emacsPackagesGen unstable.emacs).emacsWithPackages
+  emacsWithPackages = (unstable.emacsPackagesFor unstable.emacs).emacsWithPackages
     (epkgs: ([epkgs.pdf-tools]));
 in
 
@@ -19,12 +19,12 @@ in
     automake
     autoconf
     alacritty
-    androidStudioPackages.dev
+    # androidStudioPackages.dev
     arandr
     arp-scan
     avahi
     avrdude
-    aws
+    awscli2
     bash-completion
     bat
     blueman
@@ -36,16 +36,18 @@ in
     clojure-lsp
     clj-kondo
     cmake
+    curl
     davfs2
+    delta
     deja-dup
     dex # .desktop file opener
     direnv
     unstable.discord
     docker
-    docker_compose
+    docker-compose
     dunst
-    # emacsWithPackages
-    emacs
+    emacsWithPackages
+    # emacs
     emacs-all-the-icons-fonts
     unstable.erlangR24
     unstable.beam.packages.erlangR24.elixir
@@ -71,18 +73,19 @@ in
     heroku
     hicolor-icon-theme
     htop
+    inetutils
     inotify-tools
     insomnia
     ispell
     isync
     jdk
     jre
+    jq
     libreoffice
     libtool
     lsof
     lxqt.lxqt-openssh-askpass
     mlocate
-    mopidy-spotify
     mpd
     mplayer
     mumble
@@ -111,8 +114,10 @@ in
     pulseaudio
     python3
     python38Packages.pip
+    unstable.qmk
     rebar3
     remmina
+    remote-touchpad
     ripcord
     ripgrep
     rofi
@@ -128,8 +133,8 @@ in
     sqlite
     unstable.tdlib # for telegram
     teamviewer
-    teams
-    telnet
+    # teams
+    terraform_0_13
     tmux
     traceroute
     tree
@@ -177,6 +182,7 @@ in
         "artswrite.test"
         "ashevilletheatre.test"
         "bankruptcypros.test"
+        "cannabusiness.test"
         "cleanenergy.test"
         "cleanwp.test"
         "dogwoodalliance.test"
@@ -212,15 +218,17 @@ in
   };
 
   fonts = {
-    fontconfig.dpi = 120;
+    # fontconfig.dpi = 120;
     fonts = with pkgs; [
       fira-code
       fira-code-symbols
       iosevka
+      # nerdfonts
     ];
   };
 
   programs = {
+    adb.enable = true;
     dconf.enable = true;
     slock.enable = true;
     ssh.startAgent = false; # use gpg-agent instead
@@ -239,6 +247,7 @@ in
           config = config.nixpkgs.config;
         };
       };
+      permittedInsecurePackages = ["electron-12.2.3"];
     };
     overlays = [
       (self: super: {
@@ -271,28 +280,43 @@ in
     # Locate Config
     locate = {
       enable = true;
-      interval = "minutely";
+      interval = "hourly";
+      localuser = null;
+      locate = pkgs.mlocate;
       pruneNames = [
+        ".config"
+        ".emacs.d"
         "_build"
         "node_modules"
+        "postgres-data"
       ];
       prunePaths = [
-        "/tmp"
-        "/var/tmp"
-        "/var/cache"
-        "/var/lock"
-        "/var/run"
-        "/var/spool"
-        "/nix/store"
-        "/nix/var/log/nix"
+        "/bin"
+        "/boot"
+        "/dev"
+        "/etc"
+        "/home/davfs2"
         "/home/jasonmj/.android"
+        "/home/jasonmj/.emacs.d"
+        "/home/jasonmj/.local"
+        "/home/jasonmj/.mozilla"
         "/home/jasonmj/.npm"
         "/home/jasonmj/.npm-packages"
         "/home/jasonmj/.nerves"
         "/home/jasonmj/.cache"
         "/home/jasonmj/.hex"
+        "/home/jasonmj/org"
         "/home/jasonmj/virtualbox"
-        "/home/jasonmj/"
+        "/mnt"
+        "/opt"
+        "/proc"
+        "/nix"
+        "/root"
+        "/share"
+        "/sys"
+        "/tmp"
+        "/usr"
+        "/var"
       ];
     };
 
@@ -306,19 +330,12 @@ in
       lidSwitch = "ignore";
     };
 
-    # mopidy = {
-    #   enable = true;
-    #   extensionPackages = [
-    #     pkgs.mopidy-iris
-    #     pkgs.mopidy-spotify
-    #   ];
-    #   extraConfigFiles = [ "/share/mopidy/mopidy.conf" ];
-    # };
-
     picom = {
       enable = true;
       vSync = true;
     };
+
+    teamviewer.enable = true;
 
     xl2tpd.enable = true;
 
@@ -386,7 +403,7 @@ in
 
     # UDEV Packages
     udev.packages = with pkgs; [
-      android-udev-rules
+      # android-udev-rules
       avrdude
       libmtp.bin
       yubikey-personalization
@@ -400,6 +417,7 @@ in
   time.timeZone = "America/New_York";
 
   # Define Users and Groups
+  users.groups.mlocate = {};
   users.users.jasonmj = {
     description = "Jason Johnson";
     isNormalUser = true;
@@ -414,5 +432,5 @@ in
   virtualisation.docker.enable = true;
   virtualisation.virtualbox.host.enable = true;
 
-  system.stateVersion = "21.11";
+  system.stateVersion = "22.05";
 }
