@@ -3,8 +3,6 @@
 let
   unstableTarball = fetchTarball https://nixos.org/channels/nixpkgs-unstable/nixexprs.tar.xz;
   unstable = import unstableTarball { config = config.nixpkgs.config; };
-  emacsWithPackages = (unstable.emacsPackagesFor unstable.emacs).emacsWithPackages
-    (epkgs: ([epkgs.pdf-tools]));
 in
 
 {
@@ -19,7 +17,6 @@ in
     automake
     autoconf
     alacritty
-    # androidStudioPackages.dev
     arandr
     arp-scan
     avahi
@@ -27,129 +24,101 @@ in
     awscli2
     bash-completion
     bat
-    blueman
-    bluezFull
-    bluez-tools
-    cargo
+    brave
     chromium
     clojure
     clojure-lsp
-    clj-kondo
     cmake
     curl
     davfs2
+    deadd-notification-center
     delta
     deja-dup
     dex # .desktop file opener
     direnv
-    unstable.discord
     docker
     docker-compose
-    dunst
-    emacsWithPackages
-    # emacs
+    electron
+    (emacsWithPackagesFromUsePackage {
+      config = /home/jasonmj/.emacs.d/init.el;
+      package = (pkgs.emacsNativeComp.override { withXwidgets = true; });
+      alwaysEnsure = true;
+      alwaysTangle = true;
+      extraEmacsPackages = epkgs: [
+        epkgs.pdf-tools
+        epkgs.vterm
+      ];
+      override = epkgs: epkgs // {
+        tree-sitter-langs = epkgs.tree-sitter-langs.withPlugins(
+          grammars: builtins.filter lib.isDerivation (lib.attrValues grammars)
+        );
+      };
+    })
     emacs-all-the-icons-fonts
-    unstable.erlangR24
-    unstable.beam.packages.erlangR24.elixir
+    unstable.erlangR25
+    unstable.beam.packages.erlangR25.elixir
     unstable.elixir_ls
-    # esptool
-    etcher
     exa
-    feh
     file
-    filezilla
     firefox
     fish
     flameshot
-    fritzing
-    fwup
     gcc
-    gdb
+    gh
     git
-    gnome.dconf-editor
     gnumake
     gnupg
-    gparted
-    heroku
-    hicolor-icon-theme
+    gtk3-x11
     htop
-    inetutils
     inotify-tools
-    insomnia
     ispell
-    isync
     jdk
     jre
     jq
     libreoffice
     libtool
     lsof
-    lxqt.lxqt-openssh-askpass
     mlocate
-    mpd
     mplayer
-    mumble
-    p7zip
-    my-polybar
     networkmanagerapplet
-    networkmanager-l2tp
+    # networkmanager-l2tp
     nmap
     nodejs
     nodePackages.javascript-typescript-langserver
     nodePackages.prettier
     nodePackages.typescript
     nodePackages.bash-language-server
-    openshot-qt
+    obsidian
     openssl
-    openvpn
+    # openvpn
     pamixer
     pandoc
-    paprefs
-    pasystray
     pavucontrol
-    picocom
-    php74
-    php74Packages.composer
-    pkg-config
+    postman
     pulseaudio
     python3
-    python38Packages.pip
-    unstable.qmk
     rebar3
     remmina
-    remote-touchpad
-    ripcord
     ripgrep
-    rofi
-    sass
-    sassc
     screen
     scrot
     shutter
     unstable.signal-desktop
-    sierra-gtk-theme
     simplescreenrecorder
-    squashfsTools
+    slack
     sqlite
-    unstable.tdlib # for telegram
-    teamviewer
-    # teams
-    terraform_0_13
-    tmux
+    tig
     traceroute
     tree
-    universal-ctags
     unzip
+    usbutils
     vim
     vscodium
-    watchman
+    wayland
     wget
     whois
-    wordnet
     xbanish
     xbindkeys xbindkeys-config xdotool
-    xfce.xfce4-settings
-    xl2tpd
     xorg.xbacklight xorg.xev xorg.xmodmap
     yarn
     yubikey-manager
@@ -175,7 +144,7 @@ in
   networking = {
     firewall = {
       enable = false;
-      allowedTCPPorts = [ 8000 9630 19000 19001 19002 19003 ];
+      allowedTCPPorts = [ 8000 9630 ];
     };
     hosts = {
       "127.0.0.1" = [
@@ -218,7 +187,6 @@ in
   };
 
   fonts = {
-    # fontconfig.dpi = 120;
     fonts = with pkgs; [
       fira-code
       fira-code-symbols
@@ -250,11 +218,9 @@ in
       permittedInsecurePackages = ["electron-12.2.3"];
     };
     overlays = [
-      (self: super: {
-        my-polybar = super.polybar.override {
-          pulseSupport = true;
-        };
-      })
+      (import (builtins.fetchTarball {
+        url = https://github.com/nix-community/emacs-overlay/archive/master.tar.gz;
+      }))
     ];
   };
 
@@ -264,13 +230,6 @@ in
     avahi = {
       enable = true;
       nssmdns = true;
-      publish = {
-        enable = true;
-        domain = true;
-        addresses = true;
-        userServices = true;
-      };
-      interfaces = ["wlp0s20f3" "enp0s31f6"];
     };
 
     davfs2.enable = true;
@@ -285,7 +244,6 @@ in
       locate = pkgs.mlocate;
       pruneNames = [
         ".config"
-        ".emacs.d"
         "_build"
         "node_modules"
         "postgres-data"
@@ -335,15 +293,33 @@ in
       vSync = true;
     };
 
-    teamviewer.enable = true;
+    postgresql = let mypg = pkgs.postgresql_13; in {
+      enable = true;
+      package = mypg;
+      authentication = pkgs.lib.mkForce ''
+      # TYPE	DATABASE	USER	ADDRESS		METHOD
+      local	all		all			trust
+      host	all		all	127.0.0.1/32	trust
+      host	all		all	::1/128		trust
+      '';
+      extraPlugins = with mypg.pkgs; [ pkgs.postgresql13Packages.postgis ];
+    };
+
+    resolved = {
+      enable = true;
+      fallbackDns = ["8.8.8.8" "2001:4860:4860::8844"];
+    };
 
     xl2tpd.enable = true;
 
     xserver = {
       enable = true;
 
+      # Display
+      dpi = 120;
+
       # Keyboard
-      autoRepeatDelay = 130;
+      autoRepeatDelay = 150;
       autoRepeatInterval = 12;
       layout = "us";
 
@@ -385,11 +361,11 @@ in
         session = [
           {
             manage = "window";
-            name = "emacs";
+            name = "exwm";
             start = ''
               export VISUAL=emacsclient
               export EDITOR="$VISUAL"
-              exec dbus-launch --exit-with-session ${pkgs.emacs}/bin/emacs -mm
+              exec dbus-launch --exit-with-session ${pkgs.emacs}/bin/emacs-28.1 -mm
             '';
           }
         ];
@@ -403,7 +379,6 @@ in
 
     # UDEV Packages
     udev.packages = with pkgs; [
-      # android-udev-rules
       avrdude
       libmtp.bin
       yubikey-personalization
@@ -411,8 +386,6 @@ in
   };
 
   sound.enable = true;
-
-  systemd.network.networks.wlp0s20f3.networkConfig.MulticastDNS = true;
 
   time.timeZone = "America/New_York";
 
@@ -432,5 +405,6 @@ in
   virtualisation.docker.enable = true;
   virtualisation.virtualbox.host.enable = true;
 
+  system.nssDatabases.hosts = [ "impression" "nerves" "pitimer" "01232cc90a32da9eee" ];
   system.stateVersion = "22.05";
 }
