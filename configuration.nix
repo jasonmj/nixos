@@ -21,40 +21,24 @@ in
     arp-scan
     avahi
     avrdude
-    awscli2
     bash-completion
-    bat
-    brave
     chromium
     clojure
     clojure-lsp
     cmake
     curl
-    davfs2
     deadd-notification-center
     delta
     deja-dup
     dex # .desktop file opener
     direnv
+    unstable.discord
     docker
     docker-compose
-    electron
-    (emacsWithPackagesFromUsePackage {
-      config = /home/jasonmj/.emacs.d/init.el;
-      package = (pkgs.emacsNativeComp.override { withXwidgets = true; });
-      alwaysEnsure = true;
-      alwaysTangle = true;
-      extraEmacsPackages = epkgs: [
-        epkgs.pdf-tools
-        epkgs.vterm
-      ];
-      override = epkgs: epkgs // {
-        tree-sitter-langs = epkgs.tree-sitter-langs.withPlugins(
-          grammars: builtins.filter lib.isDerivation (lib.attrValues grammars)
-        );
-      };
-    })
+    dropbox-cli
+    emacsNativeComp
     emacs-all-the-icons-fonts
+    emacs28Packages.vterm
     unstable.erlangR25
     unstable.beam.packages.erlangR25.elixir
     unstable.elixir_ls
@@ -63,24 +47,29 @@ in
     firefox
     fish
     flameshot
+    foxitreader
     gcc
     gh
     git
     gnumake
     gnupg
     gtk3-x11
+    graphviz
     htop
     inotify-tools
     ispell
+    isync
     jdk
     jre
     jq
     libreoffice
     libtool
+    logseq
     lsof
-    mlocate
     mplayer
-    networkmanagerapplet
+    msmtp
+    mu
+    # networkmanagerapplet
     # networkmanager-l2tp
     nmap
     nodejs
@@ -88,7 +77,7 @@ in
     nodePackages.prettier
     nodePackages.typescript
     nodePackages.bash-language-server
-    obsidian
+    notmuch
     openssl
     # openvpn
     pamixer
@@ -101,20 +90,17 @@ in
     remmina
     ripgrep
     screen
-    scrot
     shutter
     unstable.signal-desktop
     simplescreenrecorder
-    slack
     sqlite
-    tig
+    starship
     traceroute
     tree
     unzip
     usbutils
     vim
     vscodium
-    wayland
     wget
     whois
     xbanish
@@ -144,42 +130,15 @@ in
   networking = {
     firewall = {
       enable = false;
-      allowedTCPPorts = [ 8000 9630 ];
+      allowedTCPPorts = [
+        8000
+        9630
+        17500
+      ];
+      allowedUDPPorts = [ 17500 ];
     };
     hosts = {
-      "127.0.0.1" = [
-        "artswrite.test"
-        "ashevilletheatre.test"
-        "bankruptcypros.test"
-        "cannabusiness.test"
-        "cleanenergy.test"
-        "cleanwp.test"
-        "dogwoodalliance.test"
-        "ecoexplore.test"
-        "equinoxenvironmental.test"
-        "go.fullsteamlabs.test"
-        "golocalasheville.test"
-        "keyespottery.test"
-        "litnotice.test"
-        "freecycle.test"
-        "johnsonhilliard.test"
-        "mt.freecycle.org"
-        "freecycle.org"
-        "fsl-backend.test"
-        "icrt-iot-training.test"
-        "ilsag.test"
-        "newprairieconstruction.test"
-        "newprairiesolar.test"
-        "plasmaui.test"
-        "riverartsdistrict.test"
-        "resource-realty.test"
-        "scan-harbor.test"
-        "summitsearchsolutions.test"
-        "teflpros.test"
-        "toggl-podio.test"
-      ];
-      "0.0.0.0" = ["fullsteamlabs.test"];
-      "192.168.0.11" = ["pitimer.config"];
+      "127.0.0.1" = ["plasmaui.test"];
       "172.31.98.1" = ["aruba.odyssys.net"];
     };
     hostName = "nixos";
@@ -191,7 +150,7 @@ in
       fira-code
       fira-code-symbols
       iosevka
-      # nerdfonts
+      (nerdfonts.override { fonts = [ "FiraCode" ]; })
     ];
   };
 
@@ -215,12 +174,17 @@ in
           config = config.nixpkgs.config;
         };
       };
-      permittedInsecurePackages = ["electron-12.2.3"];
     };
     overlays = [
       (import (builtins.fetchTarball {
         url = https://github.com/nix-community/emacs-overlay/archive/master.tar.gz;
       }))
+      (self: super: {
+        emacsNativeComp = super.emacsNativeComp.override {
+          withXwidgets = true;
+          withGTK3 = true;
+        };
+      })
     ];
   };
 
@@ -231,8 +195,6 @@ in
       enable = true;
       nssmdns = true;
     };
-
-    davfs2.enable = true;
 
     fwupd.enable = true;
 
@@ -253,9 +215,7 @@ in
         "/boot"
         "/dev"
         "/etc"
-        "/home/davfs2"
         "/home/jasonmj/.android"
-        "/home/jasonmj/.emacs.d"
         "/home/jasonmj/.local"
         "/home/jasonmj/.mozilla"
         "/home/jasonmj/.npm"
@@ -263,7 +223,8 @@ in
         "/home/jasonmj/.nerves"
         "/home/jasonmj/.cache"
         "/home/jasonmj/.hex"
-        "/home/jasonmj/org"
+        "/home/jasonmj/Dropbox"
+        "/home/jasonmj/Maildir"
         "/home/jasonmj/virtualbox"
         "/mnt"
         "/opt"
@@ -302,7 +263,6 @@ in
       host	all		all	127.0.0.1/32	trust
       host	all		all	::1/128		trust
       '';
-      extraPlugins = with mypg.pkgs; [ pkgs.postgresql13Packages.postgis ];
     };
 
     resolved = {
@@ -338,7 +298,7 @@ in
       libinput = {
         enable = true;
         touchpad = {
-          accelSpeed = "0.3";
+          accelSpeed = "0.4";
           clickMethod = "none";
           disableWhileTyping = true;
           naturalScrolling = false;
@@ -365,7 +325,7 @@ in
             start = ''
               export VISUAL=emacsclient
               export EDITOR="$VISUAL"
-              exec dbus-launch --exit-with-session ${pkgs.emacs}/bin/emacs-28.1 -mm
+              exec dbus-launch --exit-with-session ${pkgs.emacsNativeComp}/bin/emacs-28.1 -mm
             '';
           }
         ];
@@ -387,6 +347,24 @@ in
 
   sound.enable = true;
 
+  systemd.user.services.dropbox = {
+    description = "Dropbox";
+    wantedBy = [ "graphical-session.target" ];
+    environment = {
+      QT_PLUGIN_PATH = "/run/current-system/sw/" + pkgs.qt5.qtbase.qtPluginPrefix;
+      QML2_IMPORT_PATH = "/run/current-system/sw/" + pkgs.qt5.qtbase.qtQmlPrefix;
+    };
+    serviceConfig = {
+      ExecStart = "${pkgs.dropbox.out}/bin/dropbox";
+      ExecReload = "${pkgs.coreutils.out}/bin/kill -HUP $MAINPID";
+      KillMode = "control-group"; # upstream recommends process
+      Restart = "on-failure";
+      PrivateTmp = true;
+      ProtectSystem = "full";
+      Nice = 10;
+    };
+  };
+
   time.timeZone = "America/New_York";
 
   # Define Users and Groups
@@ -396,14 +374,16 @@ in
     isNormalUser = true;
     uid = 1000;
     group = "users";
-    extraGroups = [ "adbusers" "bluetooth" "davfs2" "dialout" "docker" "input" "mlocate" "networkmanager" "wheel" ];
+    extraGroups = [ "adbusers" "bluetooth" "dialout" "docker" "input" "mlocate" "networkmanager" "wheel" ];
   };
 
   # User nslcd daemon (nss-pam-ldapd) to handle LDAP lookups for NSS and PAM
   users.ldap.daemon.enable = true;
 
-  virtualisation.docker.enable = true;
-  virtualisation.virtualbox.host.enable = true;
+  virtualisation = {
+    docker.enable = true;
+    virtualbox.host.enable = true;
+  };
 
   system.nssDatabases.hosts = [ "impression" "nerves" "pitimer" "01232cc90a32da9eee" ];
   system.stateVersion = "22.05";

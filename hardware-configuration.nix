@@ -14,21 +14,10 @@
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/97fab64e-bfa7-4d0b-a9ab-b1eeb0fa26f2";
       fsType = "btrfs";
-      options = [ "subvol=nixos" ];
+      options = [ "noatime" "compress=lzo" "space_cache" "autodefrag" "subvol=nixos" ];
     };
 
   boot.initrd.luks.devices."nixos-enc".device = "/dev/disk/by-uuid/cbb9a4d9-b7c8-442f-baf9-b79b7610f5be";
-
-  fileSystems."/home/jasonmj/org" =
-    { device = "https://nextcloud.forthelonghaul.net/remote.php/webdav/";
-      fsType = "davfs";
-      options = [
-        "noauto"
-        "uid=1000"
-        "gid=100"
-        "x-systemd.automount"
-      ];
-    };
 
   fileSystems."/boot" =
     { device = "/dev/disk/by-uuid/F474-F912";
