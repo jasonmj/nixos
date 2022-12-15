@@ -23,6 +23,8 @@ in
     avrdude
     bash-completion
     chromium
+    clang
+    clang-tools
     clojure
     clojure-lsp
     cmake
@@ -36,7 +38,8 @@ in
     docker
     docker-compose
     dropbox-cli
-    emacsNativeComp
+    eagle
+    unstable.emacs
     emacs-all-the-icons-fonts
     emacs28Packages.vterm
     unstable.erlangR25
@@ -78,6 +81,7 @@ in
     nodePackages.typescript
     nodePackages.bash-language-server
     notmuch
+    openshot-qt
     openssl
     # openvpn
     pamixer
@@ -95,8 +99,10 @@ in
     simplescreenrecorder
     sqlite
     starship
+    teams
     traceroute
     tree
+    unar
     unzip
     usbutils
     vim
@@ -149,6 +155,7 @@ in
     fonts = with pkgs; [
       fira-code
       fira-code-symbols
+      google-fonts
       iosevka
       (nerdfonts.override { fonts = [ "FiraCode" ]; })
     ];
@@ -321,11 +328,18 @@ in
         session = [
           {
             manage = "window";
+            name = "xterm";
+            start = ''
+              exec xterm
+            '';
+          }
+          {
+            manage = "window";
             name = "exwm";
             start = ''
               export VISUAL=emacsclient
               export EDITOR="$VISUAL"
-              exec dbus-launch --exit-with-session ${pkgs.emacsNativeComp}/bin/emacs-28.1 -mm
+              exec dbus-launch --exit-with-session emacs -mm
             '';
           }
         ];
@@ -368,6 +382,7 @@ in
   time.timeZone = "America/New_York";
 
   # Define Users and Groups
+  users.extraGroups.vboxusers.members = [ "jasonmj" ];
   users.groups.mlocate = {};
   users.users.jasonmj = {
     description = "Jason Johnson";
@@ -382,7 +397,10 @@ in
 
   virtualisation = {
     docker.enable = true;
-    virtualbox.host.enable = true;
+    virtualbox.host = {
+      enable = true;
+      enableExtensionPack = true;
+    };
   };
 
   system.nssDatabases.hosts = [ "impression" "nerves" "pitimer" "01232cc90a32da9eee" ];
