@@ -6,7 +6,7 @@
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
-  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usbhid" "usb_storage" "sd_mod" ];
+  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
@@ -39,48 +39,14 @@
   swapDevices = [ ];
 
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
-
-  # Video Drivers
-  services.xserver.videoDrivers = [ "nvidia" ];
-  # hardware.nvidia.modesetting.enable = true;
-  # hardware.nvidia.powerManagement.enable = true;
-  hardware.opengl.enable = true;
-
-  # Bluetooth
-  nix.maxJobs = lib.mkDefault 12;
-  hardware.bluetooth = {
-    enable = true;
-    settings = {
-      General = {
-        Enable = "Source,Sink,Media,Socket";
-      };
-    };
-    package = pkgs.bluezFull;
-  };
-  hardware.pulseaudio = {
-    enable = true;
-    package = pkgs.pulseaudioFull;
-    extraConfig = "
-                  load-module module-alsa-sink device=hdmi:0
-                  load-module module-bluetooth-discover
-                  load-module module-bluetooth-policy
-                  load-module module-bluez5-discover
-                  load-module module-combine-sink sink_name=combined
-                  load-module module-zeroconf-discover
-                  load-module module-zeroconf-publish
-                  load-module module-raop-discover
-                  ";
-    tcp = {
-      enable = true;
-      anonymousClients.allowedIpRanges = ["127.0.0.1"];
-    };
-  };
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   # Trackpoint
   hardware.trackpoint = {
     enable = true;
     emulateWheel = false;
-    sensitivity = 140;
-    speed = 115;
+    sensitivity = 300;
+    speed = 200;
   };
 }

@@ -14,163 +14,120 @@ in
   };
 
   environment.systemPackages = with pkgs; [
-    automake
-    autoconf
     alacritty
+    (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
     arandr
-    arp-scan
-    avahi
-    avrdude
-    bash-completion
+    # arp-scan
+    # avahi
+    brightnessctl
+    clipcat
     chromium
-    clang
-    clang-tools
-    clojure
-    clojure-lsp
-    cmake
     curl
-    deadd-notification-center
     delta
-    deja-dup
-    dex # .desktop file opener
+    # deja-dup
+    # dex # .desktop file opener
     direnv
-    unstable.discord
-    docker
-    docker-compose
-    dropbox-cli
-    eagle
-    unstable.emacs
+    # docker
+    # docker-compose
+    # dropbox-cli
     emacs-all-the-icons-fonts
-    emacs28Packages.vterm
-    unstable.erlangR25
-    unstable.beam.packages.erlangR25.elixir
+    emacs-lsp-booster
+    unstable.emacs
+    unstable.erlang
+    unstable.elixir
     unstable.elixir_ls
-    exa
-    file
-    firefox
+    # eza
+    unstable.firefox
     fish
-    flameshot
-    foxitreader
+    fswatch
     gcc
-    gh
     git
     gnumake
     gnupg
-    gtk3-x11
-    graphviz
+    haskellPackages.greenclip
     htop
-    inotify-tools
-    ispell
-    isync
-    jdk
-    jre
-    jq
-    libreoffice
-    libtool
-    logseq
-    lsof
-    mplayer
-    msmtp
-    mu
-    # networkmanagerapplet
-    # networkmanager-l2tp
-    nmap
+    kanata
+    # multipass
     nodejs
-    nodePackages.javascript-typescript-langserver
-    nodePackages.prettier
-    nodePackages.typescript
     nodePackages.bash-language-server
-    notmuch
-    openshot-qt
+    # nodePackages.pyright
+    # openocd
+    # openshot-qt
     openssl
-    # openvpn
+    parcellite
     pamixer
-    pandoc
+    # pandoc
     pavucontrol
-    postman
     pulseaudio
-    python3
-    rebar3
-    remmina
+    python311
+    # python311Packages.grip
     ripgrep
+    rofi
     screen
+    screenkey
     shutter
-    unstable.signal-desktop
-    simplescreenrecorder
+    # simplescreenrecorder
     sqlite
-    starship
-    teams
-    traceroute
-    tree
-    unar
+    sxhkd
+    # traceroute
     unzip
-    usbutils
     vim
-    vscodium
     wget
     whois
-    xbanish
-    xbindkeys xbindkeys-config xdotool
-    xorg.xbacklight xorg.xev xorg.xmodmap
-    yarn
-    yubikey-manager
-    yubikey-personalization
+    # xbanish
+    xkeysnail
+    xbindkeys xbindkeys-config
+    xdotool
+    xob
+    xorg.xmodmap
     zip
     zoom-us
   ];
 
+  environment.etc."links/vterm".source = "${unstable.emacs.pkgs.vterm}/share/emacs/site-lisp/elpa";
+
   location = {
-    latitude = 35.849549;
-    longitude = -82.738750;
+    latitude = 44.4259;
+    longitude = 69.0064;
   };
 
   nix = {
     gc = { # Garbage Collection
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 30d";
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
     };
-    trustedUsers = [ "root" "jasonmj" ];
+    settings = {
+      trusted-users = [ "root"
+      "jasonmj" ];
+    };
   };
 
   networking = {
-    firewall = {
-      enable = false;
-      allowedTCPPorts = [
-        8000
-        9630
-        17500
-      ];
-      allowedUDPPorts = [ 17500 ];
-    };
-    hosts = {
-      "127.0.0.1" = ["plasmaui.test"];
-      "172.31.98.1" = ["aruba.odyssys.net"];
-    };
+    firewall.enable = true;
     hostName = "nixos";
     networkmanager.enable = true;
   };
 
   fonts = {
-    fonts = with pkgs; [
+    packages = with pkgs; [
       fira-code
       fira-code-symbols
       google-fonts
       iosevka
-      (nerdfonts.override { fonts = [ "FiraCode" ]; })
+      (nerdfonts.override { fonts = [ "FiraCode"
+      "Iosevka"]; })
     ];
   };
 
   programs = {
-    adb.enable = true;
-    dconf.enable = true;
+    # adb.enable = true;
+    gnupg.agent.pinentryPackage = pkgs.pinentry-emacs;
+    light.enable = true;
+    # nix-ld.enable = true;
     slock.enable = true;
     ssh.startAgent = false; # use gpg-agent instead
-    gnupg.agent = {
-      enable = true;
-      enableSSHSupport = true;
-      pinentryFlavor = "emacs";
-    };
+    sway.enable = true;
   };
 
   nixpkgs = {
@@ -182,69 +139,20 @@ in
         };
       };
     };
-    overlays = [
-      (import (builtins.fetchTarball {
-        url = https://github.com/nix-community/emacs-overlay/archive/master.tar.gz;
-      }))
-      (self: super: {
-        emacsNativeComp = super.emacsNativeComp.override {
-          withXwidgets = true;
-          withGTK3 = true;
-        };
-      })
-    ];
   };
 
   services = {
-    acpid.enable = true;
-
     avahi = {
       enable = true;
-      nssmdns = true;
+      nssmdns4 = true;
+    };
+
+    emacs = {
+      enable = true;
+      package = unstable.emacs;
     };
 
     fwupd.enable = true;
-
-    # Locate Config
-    locate = {
-      enable = true;
-      interval = "hourly";
-      localuser = null;
-      locate = pkgs.mlocate;
-      pruneNames = [
-        ".config"
-        "_build"
-        "node_modules"
-        "postgres-data"
-      ];
-      prunePaths = [
-        "/bin"
-        "/boot"
-        "/dev"
-        "/etc"
-        "/home/jasonmj/.android"
-        "/home/jasonmj/.local"
-        "/home/jasonmj/.mozilla"
-        "/home/jasonmj/.npm"
-        "/home/jasonmj/.npm-packages"
-        "/home/jasonmj/.nerves"
-        "/home/jasonmj/.cache"
-        "/home/jasonmj/.hex"
-        "/home/jasonmj/Dropbox"
-        "/home/jasonmj/Maildir"
-        "/home/jasonmj/virtualbox"
-        "/mnt"
-        "/opt"
-        "/proc"
-        "/nix"
-        "/root"
-        "/share"
-        "/sys"
-        "/tmp"
-        "/usr"
-        "/var"
-      ];
-    };
 
     logind = {
       extraConfig = "
@@ -253,7 +161,7 @@ in
         HandleHibernateKey=suspend
         IdleAction=ignore
       ";
-      lidSwitch = "ignore";
+      # lidSwitch = "ignore";
     };
 
     picom = {
@@ -261,148 +169,125 @@ in
       vSync = true;
     };
 
-    postgresql = let mypg = pkgs.postgresql_13; in {
-      enable = true;
-      package = mypg;
-      authentication = pkgs.lib.mkForce ''
-      # TYPE	DATABASE	USER	ADDRESS		METHOD
-      local	all		all			trust
-      host	all		all	127.0.0.1/32	trust
-      host	all		all	::1/128		trust
-      '';
+    pipewire.extraConfig.pipewire."99-silent-bell.conf" = {
+      "context.properties" = {
+        "module.x11.bell" = false;
+      };
     };
 
     resolved = {
       enable = true;
-      fallbackDns = ["8.8.8.8" "2001:4860:4860::8844"];
+      fallbackDns = ["8.8.8.8"];
     };
 
-    xl2tpd.enable = true;
+    # Touchpad support
+    libinput = {
+      enable = true;
+      touchpad = {
+        accelSpeed = "0.45";
+        # clickMethod = "none";
+        # disableWhileTyping = true;
+        naturalScrolling = true;
+        # sendEventsMode = "disabled";
+        # tapping = false;
+      };
+    };
+
+    # Display Manager
+    displayManager = {
+      sddm.enable = true;
+      sddm.settings = {
+        Theme = {
+          Current= "minimal";
+          ThemeDir= "/share/sddm/themes";
+          FacesDir= "/run/current-system/sw/share/sddm/faces";
+          EnableAvatars = false;
+        };
+      };
+    };
+
+    # xl2tpd.enable = true;
 
     xserver = {
       enable = true;
+      windowManager.dwm.enable = true;
+      windowManager.exwm.enable = true;
+      windowManager.bspwm.enable = true;
+      windowManager.bspwm.configFile = "/home/jasonmj/.config/bspwm/bspwmrc";
+      windowManager.bspwm.sxhkd.configFile = "/home/jasonmj/.config/sxhkd/sxhkdrc";
 
       # Display
-      dpi = 120;
+      dpi = 78;
 
       # Keyboard
       autoRepeatDelay = 150;
-      autoRepeatInterval = 12;
-      layout = "us";
+      autoRepeatInterval = 11;
+      xkb.layout = "us";
 
-      # Add Option "DontVTSwitch" "True" to Prevent switching ttys
-      config = ''
-        Section "ServerFlags"
-          Option "DontZap"      "True"
-          Option "BlankTime"    "0"
-          Option "StandbyTime"  "0"
-          Option "SuspendTime"  "0"
-          Option "OffTime"      "0"
-        EndSection
-      '';
-
-      # Touchpad support
-      libinput = {
-        enable = true;
-        touchpad = {
-          accelSpeed = "0.4";
-          clickMethod = "none";
-          disableWhileTyping = true;
-          naturalScrolling = false;
-          sendEventsMode = "disabled";
-          tapping = false;
-        };
-      };
-
-      # Display Manager
-      displayManager = {
-        sddm.enable = true;
-        sddm.settings = {
-          Theme = {
-            Current= "minimal";
-            ThemeDir= "/share/sddm/themes";
-            FacesDir= "/run/current-system/sw/share/sddm/faces";
-            EnableAvatars = false;
-          };
-        };
-        session = [
-          {
-            manage = "window";
-            name = "xterm";
-            start = ''
-              exec xterm
-            '';
-          }
-          {
-            manage = "window";
-            name = "exwm";
-            start = ''
-              export VISUAL=emacsclient
-              export EDITOR="$VISUAL"
-              exec dbus-launch --exit-with-session emacs -mm
-            '';
-          }
-        ];
-      };
+      # Add Option "DontVTSwitch"
+      # "True" to Prevent switching ttys
+      # config = ''
+      #   Section "ServerFlags"
+      #     Option "DontZap"      "True"
+      #     Option "BlankTime"    "0"
+      #     Option "StandbyTime"  "0"
+      #     Option "SuspendTime"  "0"
+      #     Option "OffTime"      "0"
+      #   EndSection
+      # '';
     };
 
-    redshift.enable = true;
+    # redshift.enable = true;
 
     # Enable pcscd for smartcard support
-    pcscd.enable = true;
+    # pcscd.enable = true;
 
-    # UDEV Packages
-    udev.packages = with pkgs; [
-      avrdude
-      libmtp.bin
-      yubikey-personalization
-    ];
-  };
-
-  sound.enable = true;
-
-  systemd.user.services.dropbox = {
-    description = "Dropbox";
-    wantedBy = [ "graphical-session.target" ];
-    environment = {
-      QT_PLUGIN_PATH = "/run/current-system/sw/" + pkgs.qt5.qtbase.qtPluginPrefix;
-      QML2_IMPORT_PATH = "/run/current-system/sw/" + pkgs.qt5.qtbase.qtQmlPrefix;
-    };
-    serviceConfig = {
-      ExecStart = "${pkgs.dropbox.out}/bin/dropbox";
-      ExecReload = "${pkgs.coreutils.out}/bin/kill -HUP $MAINPID";
-      KillMode = "control-group"; # upstream recommends process
-      Restart = "on-failure";
-      PrivateTmp = true;
-      ProtectSystem = "full";
-      Nice = 10;
+    # UDEV
+    udev = {
+      packages = with pkgs; [
+        #   avrdude
+        #   vial
+      ];
     };
   };
 
   time.timeZone = "America/New_York";
 
   # Define Users and Groups
-  users.extraGroups.vboxusers.members = [ "jasonmj" ];
-  users.groups.mlocate = {};
+  # users.extraGroups.vboxusers.members = [ "jasonmj" ];
   users.users.jasonmj = {
     description = "Jason Johnson";
     isNormalUser = true;
     uid = 1000;
     group = "users";
-    extraGroups = [ "adbusers" "bluetooth" "dialout" "docker" "input" "mlocate" "networkmanager" "wheel" ];
+    extraGroups = [
+      # "adbusers"
+      # "bluetooth"
+      # "dialout"
+      # "docker"
+      # "input"
+      # "mlocate"
+      "networkmanager"
+      "wheel"
+    ];
   };
 
   # User nslcd daemon (nss-pam-ldapd) to handle LDAP lookups for NSS and PAM
-  users.ldap.daemon.enable = true;
+  # users.ldap.daemon.enable = true;
 
-  virtualisation = {
-    docker.enable = true;
-    virtualbox.host = {
-      enable = true;
-      enableExtensionPack = true;
-    };
-  };
+  # virtualisation = {
+  # docker.enable = true;
+  # multipass.enable = true;
+  # virtualbox.host = {
+  #   enable = true;
+  #   enableExtensionPack = true;
+  # };
+  # };
 
-  system.nssDatabases.hosts = [ "impression" "nerves" "pitimer" "01232cc90a32da9eee" ];
-  system.stateVersion = "22.05";
+  # !CAUTION!
+  # Allows users in group "wheel" to execute sudo commands
+  security.sudo.wheelNeedsPassword = false;
+
+  # system.nssDatabases.hosts = [ "nerves" ];
+  system.stateVersion = "24.11";
 }
