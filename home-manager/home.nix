@@ -5,10 +5,15 @@ let
     inherit system;
     config.allowUnfree = true;
   };
+  unstable = import inputs.nixpkgs-unstable {
+    inherit system;
+    config.allowUnfree = true;
+  };
 in
 {
   imports = [inputs.xremap-flake.homeManagerModules.default];
 
+  home.file."links/vterm".source = "${pkgs.emacs30-pgtk.pkgs.vterm}/share/emacs/site-lisp/elpa";
   home.homeDirectory = "/home/jasonmj";
   home.packages = with pkgs; [
     # Programming Langs & Tools
@@ -21,6 +26,7 @@ in
 
     # CLI Utilities
     direnv
+    jq
     ripgrep
 
     # GUI Utilities
@@ -31,7 +37,8 @@ in
     wpaperd
 
     # Apps
-    emacs
+    code-cursor
+    emacs30-pgtk
     firefox
     gscreenshot
 
@@ -40,7 +47,8 @@ in
     fira-code
     fira-code-symbols
     iosevka
-    (nerdfonts.override { fonts = [ "FiraCode" "Iosevka"]; })
+    unstable.nerd-fonts.fira-code
+    unstable.nerd-fonts.iosevka
   ];
   home.stateVersion = "24.11";
   home.username = "jasonmj";
@@ -58,8 +66,11 @@ in
 
   services.emacs = {
     enable = true;
+    package = pkgs.emacs30-pgtk;
     startWithUserSession = "graphical";
   };
+
+  services.gpg-agent.pinentryPackage = pkgs.pinentry-emacs;
 
   services.swaync = {
     enable = true;
@@ -80,6 +91,30 @@ in
   wayland.windowManager.hyprland = {
     enable = true;
     extraConfig = (builtins.readFile ./modules/hyprland.conf);
-    plugins = [pkgs.hyprlandPlugins.hyprspace];
+    plugins = [ pkgs.hyprlandPlugins.hyprexpo ];
+  };
+
+  xdg.desktopEntries = {
+    emacs = {
+      name = "Emacs";
+      noDisplay = true;
+    };
+    emacsclient = {
+      name = "Emacs";
+      exec = "emacsclient -c";
+      icon = "/etc/profiles/per-user/jasonmj/share/icons/hicolor/32x32/apps/emacs.png";
+    };
+    htop = {
+      name = "Htop";
+      noDisplay = true;
+    };
+    nixos-manual = {
+      name = "NixOS Manual";
+      noDisplay = true;
+    };
+    vim = {
+      name = "Vim";
+      noDisplay = true;
+    };
   };
 }

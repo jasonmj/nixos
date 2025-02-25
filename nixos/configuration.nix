@@ -20,15 +20,12 @@
     wget
   ];
 
-  environment.etc."links/vterm".source = "${pkgs.emacs.pkgs.vterm}/share/emacs/site-lisp/elpa";
-
   nix = {
     gc = { # Garbage Collection
       automatic = true;
       dates = "weekly";
       options = "--delete-older-than 15d";
     };
-    # nixPath = [ "nixos-config=/home/jasonmj/git/jasonmj/nixos/nixos/configuration.nix"];
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
       trusted-users = [ "root" "jasonmj" ];
@@ -37,10 +34,7 @@
 
   networking.networkmanager.enable = true;
 
-  programs = {
-    gnupg.agent.pinentryPackage = pkgs.pinentry-emacs;
-    hyprland.enable = true;
-  };
+  programs.hyprland.enable = true;
 
   services = {
     getty.autologinUser = "jasonmj";

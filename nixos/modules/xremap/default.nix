@@ -1,9 +1,12 @@
 { pkgs, ...}: {
   keymap = [
     {
-      application = {"not" = "Emacs";};
+      application = {"not" = "emacs";};
       remap = {
+        # Esc/quit
         "C-g" = "ESC";
+
+        # Basic Navigation & Selection
         "C-n" = "DOWN";
         "C-Shift-n" = "Shift-DOWN";
         "C-p" = "UP";
@@ -16,25 +19,38 @@
         "M-Shift-b" = "C-Shift-LEFT";
         "M-f" = "C-RIGHT";
         "M-Shift-f" = "C-Shift-RIGHT";
-        "C-m" = "ENTER";
-        "C-Shift-m" = "C-Shift-m";
-        "C-d" = "DELETE";
-        "M-d" = "C-DELETE";
-        "C-y" = "C-v";
-        "M-w" = "C-c";
+
+        # Line Navigation & Selection
         "C-a" = "HOME";
         "C-Shift-a" = "Shift-HOME";
         "C-e" = "END";
-        "Super-a" = "C-a";
         "C-Shift-e" = "Shift-END";
-        "C-Super-n" = "C-n";
 
+        # Page Navigation
         "M-v" = "PAGEUP";
         "C-v" = "PAGEDOWN";
 
         # Beginning/End of file
         "M-Shift-COMMA" = "C-HOME";
         "M-Shift-DOT" = "C-END";
+
+        # Select All
+        "Super-a" = "C-a";
+
+        # New
+        "C-Super-n" = "C-n";
+
+        # Enter
+        "C-m" = "ENTER";
+        "C-Shift-m" = "C-Shift-m";
+
+        # Delete
+        "C-d" = "DELETE";
+        "M-d" = "C-DELETE";
+
+        # Copy/Paste
+        "C-y" = "C-v";
+        "M-w" = "C-c";
 
         # Search
         "M-s" = "C-f";
@@ -47,12 +63,12 @@
         "Super-LEFTBRACE" = "C-LEFTBRACE";
         "Super-RIGHTBRACE" = "C-RIGHTBRACE";
 
+        # Screenshot
+        "C-Shift-4".launch = [ "${pkgs.gscreenshot}/bin/gscreenshot" "-s" "-c" "-n"];
+
         # Window management
         "C-1".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "fullscreen" ];
         "C-2".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "togglesplit" ];
-
-        # Screenshot
-        "C-Shift-4".launch = [ "${pkgs.gscreenshot}/bin/gscreenshot" "-s" "-c" "-n"];
 
         # Workspaces
         "Super-1".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "1"];
@@ -96,6 +112,9 @@
 
         # Rofi Greenclip
         "M-y".launch = [ "${pkgs.rofi}/bin/rofi" "-modi" "\"clipboard:${pkgs.haskellPackages.greenclip}/bin/greenclip print\"" "-show" "clipboard" "-run-command" "{cmd}" ];
+
+        # Emacs
+        "M-x".launch = [ "${pkgs.emacs30-pgtk}/bin/emacsclient" "-c"];
       };
     }
   ];
