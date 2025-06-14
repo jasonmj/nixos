@@ -11,9 +11,9 @@
     gnupg
     htop
     openssl
+    pwvucontrol
     python312
     ripgrep
-    screen
     sqlite
     unzip
     vim
@@ -37,6 +37,15 @@
   programs.hyprland.enable = true;
 
   services = {
+    avahi = {
+      enable = true;
+      nssmdns4 = true;  # Enable nss-mdns for resolving .local hostnames
+      publish = {
+        enable = true;
+        addresses = true;
+      };
+    };
+
     getty.autologinUser = "jasonmj";
     logind.lidSwitch = "hibernate";
     pipewire.extraConfig.pipewire."99-silent-bell.conf"."context.properties"."module.x11.bell" = false;

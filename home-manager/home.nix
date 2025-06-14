@@ -11,7 +11,10 @@ let
   };
 in
 {
-  imports = [inputs.xremap-flake.homeManagerModules.default];
+  imports = [
+    inputs.walker.homeManagerModules.default
+    inputs.xremap-flake.homeManagerModules.default
+  ];
 
   home.file."links/vterm".source = "${pkgs.emacs30-pgtk.pkgs.vterm}/share/emacs/site-lisp/elpa";
   home.homeDirectory = "/home/jasonmj";
@@ -25,22 +28,25 @@ in
     nodejs
 
     # CLI Utilities
+    unstable.aider-chat
     direnv
     jq
     ripgrep
 
     # GUI Utilities
     haskellPackages.greenclip
-    rofi-wayland
     waybar
     wob
     wpaperd
 
     # Apps
-    code-cursor
+    chromium
     emacs30-pgtk
     firefox
     gscreenshot
+    kooha
+    unstable.lmstudio
+    zoom-us
 
     # Fonts
     emacs-all-the-icons-fonts
@@ -53,6 +59,27 @@ in
   home.stateVersion = "24.11";
   home.username = "jasonmj";
 
+  programs.fuzzel = {
+    enable = true;
+    settings = {
+      main = {
+        anchor = "top";
+        font = "DejaVu Sans:size=10";
+        line-height = 16;
+        lines = 10;
+        prompt = "❯   ";
+        vertical-pad = 16;
+        y-margin = 200;
+      };
+      colors = {
+        background = "181825ff";
+        selection = "cba6f7ff";
+        selection-text = "181825ff";
+        text = "d8e6f4ff";
+      };
+    };
+  };
+
   programs.kitty = {
     enable = true;
     settings.enable_audio_bell = false;
@@ -64,6 +91,40 @@ in
     theme = ./programs/rofi/themes/rounded-nord-dark.rasi;
   };
 
+  programs.walker = {
+    enable = true;
+    runAsService = true;
+
+    # All options from the config.json can be used here.
+    config = {
+      activation_mode = { labels = "123456789"; };
+      keys = {
+        next = ["ctrl n"];
+        prev = ["ctrl p"];
+        close = ["ctrl g"];
+      };
+    };
+  };
+
+  programs.wpaperd = {
+    enable = true;
+    settings = {
+      default = {
+        duration = "240s";
+        mode = "center";
+        transition-time = 1200;
+        sorting = "random";
+        queue-size = 25;
+      };
+
+      default.transition.hexagonalize = {
+        steps = 50;
+        horizontal-hexagons = 20.0;
+      };
+      any.path = "/home/jasonmj/wallpapers/";
+    };
+  };
+
   services.emacs = {
     enable = true;
     package = pkgs.emacs30-pgtk;
@@ -72,14 +133,7 @@ in
 
   services.gpg-agent.pinentryPackage = pkgs.pinentry-emacs;
 
-  services.swaync = {
-    enable = true;
-    settings = {
-      positionX = "right";
-      positionY = "top";
-      layer = "overlay";
-    };
-  };
+  services.swaync.enable = true;
 
   services.xremap = {
     config = (import ./../nixos/modules/xremap/default.nix { inherit pkgs; });
@@ -91,7 +145,7 @@ in
   wayland.windowManager.hyprland = {
     enable = true;
     extraConfig = (builtins.readFile ./modules/hyprland.conf);
-    plugins = [ pkgs.hyprlandPlugins.hyprexpo ];
+    plugins = [ pkgs.hyprlandPlugins.hyprspace ];
   };
 
   xdg.desktopEntries = {
@@ -104,8 +158,12 @@ in
       exec = "emacsclient -c";
       icon = "/etc/profiles/per-user/jasonmj/share/icons/hicolor/32x32/apps/emacs.png";
     };
-    htop = {
-      name = "Htop";
+    gscreenshot = {
+      name = "gscreenshot";
+      noDisplay = true;
+    };
+    gvim = {
+      name = "gvim";
       noDisplay = true;
     };
     nixos-manual = {

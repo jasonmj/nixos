@@ -82,17 +82,6 @@
         "Super-9".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "9"];
         "Super-0".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "10"];
 
-        "Super-M-1".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "1"];
-        "Super-M-2".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "2"];
-        "Super-M-3".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "3"];
-        "Super-M-4".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "4"];
-        "Super-M-5".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "5"];
-        "Super-M-6".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "6"];
-        "Super-M-7".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "7"];
-        "Super-M-8".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "8"];
-        "Super-M-9".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "9"];
-        "Super-M-0".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "10"];
-
         "Super-Control-1".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "movetoworkspace" "1"];
         "Super-Control-2".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "movetoworkspace" "2"];
         "Super-Control-3".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "movetoworkspace" "3"];
@@ -115,6 +104,20 @@
 
         # Emacs
         "M-x".launch = [ "${pkgs.emacs30-pgtk}/bin/emacsclient" "-c"];
+      };
+    }
+    {
+      remap = {
+        "Super-M-1".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "1"];
+        "Super-M-2".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "2"];
+        "Super-M-3".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "3"];
+        "Super-M-4".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "4"];
+        "Super-M-5".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "5"];
+        "Super-M-6".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "6"];
+        "Super-M-7".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "7"];
+        "Super-M-8".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "8"];
+        "Super-M-9".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "9"];
+        "Super-M-0".launch = [ "${pkgs.hyprland}/bin/hyprctl" "dispatch" "workspace" "10"];
       };
     }
   ];
