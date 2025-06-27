@@ -121,15 +121,4 @@
       };
     }
   ];
-  modmap = [
-    {
-      name = "Global";
-      remap = {
-        "CAPSLOCK" = "SUPER_R";
-        "ALT_L" = "CONTROL_L";
-        "SUPER_L" = "ALT_L";
-        "ALT_R" = "BACKSPACE";
-      };
-    }
-  ];
 }

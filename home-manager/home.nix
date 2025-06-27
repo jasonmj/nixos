@@ -12,11 +12,10 @@ let
 in
 {
   imports = [
-    inputs.walker.homeManagerModules.default
     inputs.xremap-flake.homeManagerModules.default
   ];
 
-  home.file."links/vterm".source = "${pkgs.emacs30-pgtk.pkgs.vterm}/share/emacs/site-lisp/elpa";
+  home.file.".local/vterm".source = "${pkgs.emacs30-pgtk.pkgs.vterm}/share/emacs/site-lisp/elpa";
   home.homeDirectory = "/home/jasonmj";
   home.packages = with pkgs; [
     # Programming Langs & Tools
@@ -89,21 +88,6 @@ in
     enable = true;
     package = pkgs.rofi-wayland;
     theme = ./programs/rofi/themes/rounded-nord-dark.rasi;
-  };
-
-  programs.walker = {
-    enable = true;
-    runAsService = true;
-
-    # All options from the config.json can be used here.
-    config = {
-      activation_mode = { labels = "123456789"; };
-      keys = {
-        next = ["ctrl n"];
-        prev = ["ctrl p"];
-        close = ["ctrl g"];
-      };
-    };
   };
 
   programs.wpaperd = {

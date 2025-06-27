@@ -47,7 +47,18 @@
     };
 
     getty.autologinUser = "jasonmj";
+
     logind.lidSwitch = "hibernate";
+
+    openssh = {
+      enable = true;
+      settings = {
+        X11Forwarding = true;
+        PasswordAuthentication = false;
+        KbdInteractiveAuthentication = false;
+      };
+    };
+
     pipewire.extraConfig.pipewire."99-silent-bell.conf"."context.properties"."module.x11.bell" = false;
   };
 
